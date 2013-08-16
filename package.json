@@ -18,7 +18,8 @@
     "once": "~1.1.1",
     "level-delete-range": "~0.1.0",
     "cookie": "~0.1.0",
-    "colors": "~0.6.1"
+    "colors": "~0.6.1",
+    "thunky": "~0.1.0"
   },
   "main": "server.js"
 }
