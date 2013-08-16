@@ -87,10 +87,6 @@ app.get('/search', function(request, response) {
 	});
 });
 
-app.get('/indexing', function(request, response) {
-	response.render('indexing.html');
-});
-
 app.error(404, function(request, response) {
 	response.render('error.html', {title:'404 Not Found', message: 'We cannot find the page you are looking for'});
 });
