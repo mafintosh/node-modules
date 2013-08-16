@@ -1,0 +1,28 @@
+<% if (!modules.length) { %>
+	<div class="warn block">
+		<h2>No modules were found</h2>
+		<span>Try searching for some more generic like <a href="/search?q=test+framework">test framework</a> or <a href="/search?q=database">database</a></span>
+	</div>
+<% } %>
+<% modules.forEach(function(mod) { %>
+	<div class="module" data-score="<%= mod.score %>">
+		<% if (mod.stars) { %>
+			<span class="stars"><%= mod.stars %></span>
+		<% } %>
+		<h2><a href="<%= mod.url %>"><%= mod.name %></a></h2>
+		<div class="subline">
+			by <a href="<%= mod.profile %>" class="<%= mod.related ? 'following' : '' %>"><%= mod.author %></a>
+			and used by
+			<% if (mod.relation.length) { %>
+				<% mod.relation.forEach(function(relation) { %>
+					<a href="https://github.com/<%= relation %>" class="following"><%= relation %></a>
+				<% }) %>
+				and
+			<% } %>
+			<%= mod.dependents + (mod.dependents === 1 ? ' module' : ' modules') %>
+		</div>
+		<p class="description">
+			<%= mod.description %>
+		</p>
+	</div>
+<% }) %>

@@ -1,0 +1,181 @@
+html, body {
+	margin: 0;
+	padding: 0;
+	background-color: #46483e;
+	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	font-size: 14px;
+	color: #ccc;
+}
+
+a {
+	text-decoration: none;
+	color: inherit;
+}
+
+a:hover {
+	border-color: #aaa;
+}
+
+h1, h2 {
+	margin: 0;
+}
+
+.hidden {
+	display: none;
+}
+
+.main {
+	width: 780px;
+	margin: auto;
+}
+
+.oneline {
+	position: relative;
+	height: 32px;
+}
+
+.oneline input[type="text"] {
+	position: absolute;
+	left: 0;
+	right: 85px;
+}
+
+.oneline input[type="submit"] {
+	position: absolute;
+	right: 0;
+	width: 75px;
+}
+
+input {
+	margin: 0;
+	border-radius: 0;
+	border: none;
+	outline: none;
+	line-height: 18px;
+	font-size: 14px;
+	padding: 7px;
+}
+
+input[type="submit"] {
+	background-color: #3a87ad;
+	color: #fff;
+	padding-left: 10px;
+	padding-right: 10px;
+	cursor: pointer;
+	-webkit-appearance: none;
+}
+
+#frontpage {
+	width: 400px;
+	margin: auto;
+	margin-top: 20%;
+	padding-top: 165px;
+	background-image: url('/public/npm-large.png');
+	background-repeat: no-repeat;
+}
+
+#frontpage .text {
+	font-size: 12px;
+	margin-bottom: 5px;
+	margin-top: 12px;
+	display: block;
+}
+
+#nav {
+	background-color: #33342d;
+	height: 60px;
+	width: 100%;
+	position: fixed;
+	top: 0;
+}
+
+#nav .main {
+	padding: 14px 0;
+}
+
+#nav a {
+	float: left;
+	border: none;
+}
+
+#nav form {
+	margin-left: 140px;
+}
+
+.offset {
+	margin-top: 80px;
+}
+
+.warn {
+	background-color: #e1f76e;
+	color: #333;
+}
+
+.error {
+	background-color: #FD2F17;
+	color: white;
+}
+
+.warn a, .error a {
+	font-weight: bold;
+}
+
+.warn a {
+	color: #3a87ad;
+}
+
+.block, .module {
+	margin-bottom: 20px;
+	padding: 20px;
+}
+
+.module {
+	background-color: #f5f5f5;
+}
+
+.module a {
+	border-bottom: 1px solid #ccc;
+}
+
+.module h2 {
+	color: #333333;
+	font-size: 25px;
+	margin-bottom: 10px;
+}
+
+.module .following {
+	border: none;
+	border-radius: 3px;
+	background-color: #3a87ad;
+	color: white;
+	font-weight: bold;
+	font-size: 12px;
+	padding: 2px 4px;
+}
+
+.module .stars {
+	float: right;
+	display: block;
+	color: #666;
+	font-size: 20px;
+	font-weight: bold;
+	padding: 4px 10px;
+	padding-left: 18px;
+	background-image: url('/public/black-star.png');
+	background-repeat: no-repeat;
+	background-position: 0 50%;
+}
+
+.module .subline {
+	color: #666;
+}
+
+.module .description {
+	background-color: #fff;
+	border: 1px solid #ccc;
+	padding: 10px;
+	color: #333;
+	line-height: 20px;
+	margin: 0;
+	margin-top: 15px;
+}

@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+	<title><%= query %></title>
+	<link rel="stylesheet" type="text/css" href="<%- fingerprint('/public/base.css') %>">
+</head>
+<body>
+	<div id="nav">
+		<div class="main">
+			<a href="/"><img src="<%- fingerprint('/public/npm-small.png') %>"></a>
+			<form action="/search" class="oneline">
+				<input type="text" name="q" id="q" autofocus placeholder="Search for modules" value="<%= query %>">
+				<input type="hidden" name="u" id="u" value="<%= username %>">
+				<input type="submit" value="Search">
+			</form>
+		</div>
+	</div>
+	<% if (locals.modules) { %>
+		<div id="search" class="main offset">
+			<%{ 'modules.html' }%>
+		</div>
+	<% } else { %>
+		<div class="main offset">
+			<div class="warn block" id="index-progress">
+				<h2><%= username || 'registry' %> is being indexed</span><span id="progress"></span></h2>
+				<span>Please wait while your personal search index is being generated</span>
+			</div>
+			<div class="warn block hidden" id="index-complete">
+				<h2><%= username || 'registry' %> was succesfully indexed</span></h2>
+				<span>Indexing took <b><span id="time">21.4</span> seconds</b></span>
+			</div>
+			<div class="error block hidden" id="index-error">
+				<h2><%= username || 'registry' %> <span id="status-text">could not be indexed!</span></h2>
+				<span>Are you sure the Github username is correct? Result below uses general ranking</span>
+			</div>
+		</div>
+		<div id="search" class="main"></div>
+		<script src="<%- fingerprint('/public/indexing.js') %>"></script>
+	<% } %>
+</body>
+</html>

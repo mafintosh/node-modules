@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+<head>
+	<title>Oooops</title>
+	<link rel="stylesheet" type="text/css" href="<%- fingerprint('/public/base.css') %>">
+</head>
+<body>
+	<div id="nav">
+		<div class="main">
+			<a href="/?u=<%= username %>"><img src="<%- fingerprint('/public/npm-small.png') %>"></a>
+			<form action="/search" class="oneline">
+				<input type="hidden" name="u" id="u" value="<%= username %>">
+				<input type="text" name="q" id="q" autofocus placeholder="Search for modules" value="">
+				<input type="submit" value="Search">
+			</form>
+		</div>
+	</div>
+	<div class="main offset">
+		<div class="error block">
+			<h2>Oooooops! <%= title %></h2>
+			<span><%= message %></span>
+		</div>
+	</div>
+</body>
+</html>

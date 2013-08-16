@@ -1,0 +1,50 @@
+#!/usr/bin/env node
+
+var db = require('../db');
+var fs = require('fs');
+
+var words = {};
+var relations = {};
+var TOKEN = /^[a-zA-Z0-9@]+$/;
+
+db.modules.createValueStream()
+	.on('data', function(data) {
+		var keywords = data.keywords;
+
+		keywords = keywords.filter(function(word) {
+			return TOKEN.test(word);
+		});
+
+		keywords.forEach(function(word) {
+			words[word] = true;
+			relations[word] = relations[word] || {};
+			keywords.forEach(function(related) {
+				if (word === related) return;
+				relations[word][related] = true;
+			});
+		});
+	})
+	.on('end', function() {
+		var divide = function(word) {
+			for (var i = 2; i < word.length-1; i++) {
+				var prefix = word.slice(0, i);
+				var suffix = word.slice(i);
+
+				if (!relations[prefix] || !relations[prefix][suffix]) continue;
+				return divide(prefix).concat(divide(suffix));
+			}
+
+			return [word];
+		};
+
+
+		var compounds = {};
+		Object.keys(words).forEach(function(word) {
+			var split = divide(word) || [];
+			if (split.length <= 1) return;
+			compounds[word] = split;
+		});
+
+		fs.writeFileSync(__dirname+'/../tokenize/compounds.json', JSON.stringify(compounds, null, '\t'));
+		console.log('updated compounds.json');
+	});

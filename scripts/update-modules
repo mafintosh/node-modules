@@ -1,0 +1,305 @@
+#!/usr/bin/env node
+
+var request = require('request');
+var optimist = require('optimist');
+var transform = require('parallel-transform');
+var JSONStream = require('JSONStream');
+var getJSON = require('../getJSON');
+var db = require('../db');
+
+var argv = optimist
+	.usage('Update the node-search cache')
+	.options('m', {
+		alias: 'max-age',
+		describe: 'cache max age in ms',
+		default: 3600*1000
+	})
+	.options('q', {
+		alias: 'quiet',
+		describe: 'be quiet',
+		boolean: true
+	})
+	.options('a', {
+		alias: 'all',
+		describe: 'update entire cache',
+		boolean: true
+	})
+	.options('p', {
+		alias: 'parallel',
+		describe: 'max parallel updates',
+		default: 25
+	})
+	.argv;
+
+if (argv.help) return optimist.showHelp();
+
+if (typeof argv['max-age'] === 'string') {
+	var times = function(a,b) {
+		return a * b;
+	};
+
+	argv['max-age'] = argv['max-age'].toLowerCase()
+		.replace(/months?/g, ' 30days')
+		.replace(/weeks?/g, ' 7days')
+		.replace(/days?/g, ' 24hours')
+		.replace(/hours?/, ' 60mins')
+		.replace(/mins?/g, ' 60000')
+		.trim()
+		.split(/\s+/)
+		.map(Number)
+		.reduce(times);
+}
+
+var RATE_LIMIT_RETRY = 10*60*1000; // ten minutes
+var MAX_PARALLEL = argv.parallel;
+var OPTS_UPDATE = {maxAge:argv['max-age'], optimistic:true};
+
+var lookup = function(name, opts, callback) {
+	if (typeof opts === 'function') return module.exports(name, {}, opts);
+
+	var mod = {};
+
+	var getJSONRetry = function(url, callback) {
+		getJSON(url, opts, function(err, body, rateLimited) {
+			if (rateLimited) return setTimeout(getJSONRetry.bind(this, url, callback), RATE_LIMIT_RETRY);
+			callback(err, body);
+		});
+	};
+
+	var onnpmrepository = function(data) {
+		var npmUser = data.maintainers[0];
+		var repo = data.repository;
+
+		if (!npmUser) return callback(new Error('no npm-user for '+data.name));
+		if (!data.time) return callback();
+
+		var versions = Object.keys(data.time);
+		var latest = versions[versions.length-1];
+
+		mod.name = name;
+		mod.version = latest;
+
+		mod.created = data.time[versions[0]];
+		mod.updated = data.time[latest];
+
+		data = data.versions[latest];
+
+		mod.url = 'https://npmjs.org/package/'+enc(name);
+		mod.maintainer = npmUser.name;
+		mod.description = data.description || '';
+		mod.keywords = data.keywords || data.tags || [];
+
+		if (typeof mod.keywords === 'string') mod.keywords = mod.keywords.split(/\s+/);
+		if (!Array.isArray(mod.keywords)) mod.keywords = Object.keys(mod.keywords || {});
+
+		var uniq = {};
+		mod.keywords.forEach(function(word) {
+			uniq[word.toLowerCase()] = true;
+		});
+		mod.keywords = Object.keys(uniq);
+
+		mod.dependencies = data.dependencies ? Object.keys(data.dependencies) : [];
+		var repository = parseRepository(data.repository) || parseRepository(data.homepage);
+
+		getJSONRetry('http://registry.npmjs.org/-/_view/dependedUpon?startkey='+encJSON([name])+'&endkey='+encJSON([name, {}])+'&group_level=2', function(err, body) {
+			if (err) return callback(err);
+
+			mod.dependents = body.rows.map(function(row) {
+				return row.key[1];
+			});
+
+			onnpmuser(npmUser.name, repository);
+		});
+	};
+
+	var onnpmuser = function(username, repository) {
+		getJSONRetry('http://registry.npmjs.org/-/user/org.couchdb.user:'+enc(username), function(err, user) {
+			if (err) return callback(); // deleted user
+			if (user.github) return ongithubuser(user.github.replace(/\/$/, '').split('/').pop(), repository);
+
+			getJSONRetry('https://api.github.com/legacy/user/email/'+enc(user.email), function(err, result) {
+				if (result) return ongithubuser(result.user.login, repository);
+				getJSONRetry('https://api.github.com/users/'+enc(user.name), function(err, result) {
+					if (result) return ongithubuser(result.login, repository);
+					if (repository) return onresult(null, repository);
+					callback(null, mod);
+				});
+			});
+		});
+	};
+
+	var ongithubuser = function(username, repository) {
+		if (repository) return onresult(username, repository);
+		getJSONRetry('https://api.github.com/repos/'+enc(username)+'/'+enc(name), function(err, repo) {
+			if (repo) return onresult(username, repo.full_name);
+			getJSONRetry('https://api.github.com/repos/'+enc(username)+'/'+enc('node-'+name), function(err, repo) {
+				if (repo) return onresult(username, repo.full_name);
+				callback(null, mod);
+			});
+		});
+	};
+
+	var onresult = function(username, repository) {
+		getJSONRetry('https://api.github.com/repos/'+repository+'/collaborators/'+username, function(err, collab) {
+			getJSONRetry('https://api.github.com/repos/'+repository, function(err, repo) {
+				if (err) return callback(null, mod);
+
+				var toLogin = function(user) {
+					return user.login;
+				};
+
+				mod.github = {
+					username: username,
+					repository: repository,
+					url: 'https://github.com/'+repository,
+					maintainer: !!collab,
+					stars: repo.watchers
+				};
+
+				if (!mod.github.username) delete mod.github.username;
+
+				callback(null, mod);
+			});
+		});
+	};
+
+	getJSONRetry('http://registry.npmjs.org/'+enc(name), function(err, all) {
+		if (err) return callback(); // deleted module
+		onnpmrepository(all);
+	});
+};
+
+var then = Date.now();
+var diff = function() {
+	var time = ((Date.now() - then) / 1000) | 0;
+	then = Date.now();
+	return time;
+};
+
+var max = '';
+var maxLine = function(line) {
+	if (line.length > max.length) max = line.replace(/./g, ' ');
+	return line+max.slice(line.length);
+};
+var log = function(line) {
+	if (argv.quiet) return;
+	if (max) process.stdout.moveCursor(0, -1);
+	process.stdout.write(maxLine(line).slice(0, process.stdout.columns)+'\n');
+};
+
+var enc = encodeURIComponent;
+var encJSON = function(val) {
+	return encodeURIComponent(JSON.stringify(val));
+};
+
+var parseRepository = function(repo) {
+	if (typeof repo === 'object' && repo) return parseRepository(repo.url);
+	if (typeof repo !== 'string' || repo.indexOf('github.com') === -1) return '';
+	return repo.split('#')[0].replace(/\.git$/i, '').split('/').slice(-2).join('/');
+};
+
+db.meta.get('updated', function(err, updated) {
+	if (err || argv.all) updated = new Date(0).toISOString();
+
+	var url = 'http://registry.npmjs.org/-/_view/browseUpdated?group_level=2&startkey='+encJSON([updated]);
+	var visited = 0;
+
+	var onupdated = function(row, callback) {
+		lookup(row.key[1], OPTS_UPDATE, function(err, data) {
+			if (err || !data) return callback(err);
+			db.modules.put(data.name, data, function(err) {
+				if (err) return callback(err);
+				db.meta.put('updated', row.key[0], function(err) {
+					if (err) return callback(err);
+					callback(null, data);
+				});
+			});
+		});
+	};
+
+	log('last update was '+updated);
+	log('\nfetching...');
+	request(url)
+		.pipe(JSONStream.parse('rows.*'))
+		.pipe(transform(MAX_PARALLEL, onupdated))
+		.on('data', function(data) {
+			log('fetched '+(++visited)+' ('+data.name+')');
+		})
+		.on('end', function() {
+			log('fetched '+visited+' updates in '+diff()+'s');
+
+			var repos = {};
+			var onduplicates = function(callback) {
+				var dups = [];
+				Object.keys(repos).forEach(function(repo) {
+					if (repos[repo].length === 1) return;
+					repos[repo].forEach(function(mod) {
+						mod.github.duplicated = true;
+						dups.push({type:'put', key:mod.name, value:mod});
+					});
+				});
+
+				db.modules.batch(dups, callback);
+			};
+
+			var count = 0;
+			var onpostprocess = function(mod, callback) {
+				count++;
+
+				if (!mod.github) return callback();
+
+				var ondone = function() {
+					db.modules.put(mod.name, mod, function(err) {
+						if (err) return callback(err);
+						callback(null, mod);
+					});
+				};
+
+				var repo = mod.github.repository;
+				var onrepos = function() {
+					if (!repos[repo]) {
+						repos[repo] = [mod];
+						return ondone();
+					}
+
+					repos[repo].push(mod);
+					ondone();
+				};
+
+				var users = {};
+				var loop = function(i) {
+					if (i === mod.dependents.length) {
+						mod.github.dependents = Object.keys(users);
+						return onrepos();
+					}
+					db.modules.get(mod.dependents[i], function(_, dep) {
+						if (!dep || !dep.github || !dep.github.username) return loop(i+1);
+						users[dep.github.username] = true;
+						loop(i+1);
+					});
+				};
+
+				loop(0);
+			};
+
+			visited = 0;
+			log('\nprocessing...');
+			db.modules.createValueStream()
+				.pipe(transform(MAX_PARALLEL, onpostprocess))
+				.on('data', function(data) {
+					log('processed '+(++visited)+' ('+data.name+')');
+				})
+				.on('end', function() {
+					log('processed '+visited+' ('+count+') in '+diff()+'s');
+					log('\nmarking duplicates...');
+
+					onduplicates(function(err) {
+						if (err) throw err;
+
+						log('marked duplicates in '+diff()+'s');
+						log('\nmodules are up to date');
+						db.meta.put('modules', count);
+					});
+				});
+		});
+});
