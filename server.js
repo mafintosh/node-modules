@@ -96,4 +96,4 @@ app.error(function(request, response, opt) {
 	response.render('error.html', {title:'Something bad happened', message:opt.message || 'Unknown error'});
 });
 
-app.listen(10000);
+app.listen(process.env.PORT || 10000);
