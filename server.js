@@ -26,7 +26,7 @@ var search = function(request, callback) {
 };
 
 var fingerprint = function(url) {
-	return REVISION ? 'http://dzdv0sfntaeum.cloudfront.net/rev/'+REVISION+url : url;
+	return REVISION ? 'http://dzdv0sfntaeum.cloudfront.net/'+REVISION+url : url;
 };
 
 var modules = thunky(function(callback) {
@@ -45,14 +45,14 @@ app.use('response.render', function(filename, locals) {
 	});
 });
 
-app.get('/rev/{rev}/*', function(request, response) {
-	var maxAge = 365 * 24 * 3600;
-	response.setHeader('Expires', new Date(Date.now() + maxAge * 1000).toGMTString());
-	response.setHeader('Cache-Control', 'public, max-age='+maxAge);
+app.get('/public/*', function(request, response) {
 	send(request, __dirname+'/public/'+request.params.glob).pipe(response);
 });
 
-app.get('/public/*', function(request, response) {
+app.get('/{rev}/public/*', function(request, response) {
+	var maxAge = 365 * 24 * 3600;
+	response.setHeader('Expires', new Date(Date.now() + maxAge * 1000).toGMTString());
+	response.setHeader('Cache-Control', 'public, max-age='+maxAge);
 	send(request, __dirname+'/public/'+request.params.glob).pipe(response);
 });
 
