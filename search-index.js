@@ -64,6 +64,11 @@ var moduleScore = function(mod, user) {
 	return total;
 };
 
+var marker = function(name, score) {
+	var rank = (MAX_SCORE-score).toString(36);
+	return MAX_SCORE_PAD.slice(rank.length) + rank + '-' + name;
+};
+
 var unpack = function(packed) {
 	var mod = modules[packed[0]];
 	var gh = mod.github;
@@ -77,7 +82,8 @@ var unpack = function(packed) {
 		stars: gh ? gh.stars : 0,
 		dependents: mod.dependents.length,
 		description: mod.description,
-		url: gh ? gh.url : 'https://npmjs.org/package/'+mod.name
+		url: gh ? gh.url : 'https://npmjs.org/package/'+mod.name,
+		marker: marker(mod.name, packed[1])
 	};
 };
 
@@ -153,8 +159,7 @@ exports.add = function(user, callback) {
 			var self = this;
 			var username = mod.github && mod.github.username;
 			var value = pack(mod, user);
-			var rank = (MAX_SCORE-value[1]).toString(36); // value[1] is score
-			var name = MAX_SCORE_PAD.slice(rank.length) + rank + '-' + mod.name;
+			var score = value[1];
 
 			modules[mod.name] = mod; // let's populate the cache while we're at it
 			value = JSON.stringify(value);
@@ -162,7 +167,7 @@ exports.add = function(user, callback) {
 			var tokens = tokenize(mod.keywords.join(' ')+' '+mod.description+' '+mod.name+(username ? ' @'+username : ''))
 
 			tokens.concat('@').forEach(function(token) {
-				self.queue({key:encode(user.username, token, name), value:value});
+				self.queue({key:encode(user.username, token, marker(mod.name, score)), value:value});
 			});
 		}),
 		db.index.createWriteStream({valueEncoding:'utf-8'}),
@@ -175,12 +180,14 @@ exports.search = function(user, query, opt, callback) {
 	if (!user) user = exports.nobody;
 
 	query = tokenize(query);
+
+	if (!opt) opt = {};
 	if (!query.length) query = ['@'];
 
 	var stream = query
 		.map(function(word) {
 			return db.index.createReadStream({
-				start: encode(user.username, word)+'~',
+				start: encode(user.username, word)+(opt.marker ? '~'+opt.marker+'~' : '~'),
 				end: encode(user.username, word)+'~~',
 				valueEncoding: 'utf-8'
 			});
@@ -190,7 +197,7 @@ exports.search = function(user, query, opt, callback) {
 		});
 
 	var result = [];
-	var limit = (opt && opt.limit) || 50;
+	var limit = opt.limit || 20;
 
 	var onend = once(function(err) {
 		if (err) return callback(err);
