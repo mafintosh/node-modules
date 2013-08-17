@@ -5,7 +5,7 @@
 	</div>
 <% } %>
 <% modules.forEach(function(mod) { %>
-	<div class="module" data-marker="<%= mod.marker %>">
+	<div class="module" data-marker="<%= mod.marker %>" data-score="<%= mod.score %>">
 		<% if (mod.stars) { %>
 			<span class="stars"><%= mod.stars %></span>
 		<% } %>
