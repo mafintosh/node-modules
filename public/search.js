@@ -75,6 +75,6 @@
 	};
 
 	window.onscroll = function() {
-		if (window.innerHeight + document.body.scrollTop >= document.body.scrollHeight) more();
+		if (window.innerHeight + document.body.scrollTop - document.body.scrollHeight >= -150) more();
 	};
 })();
