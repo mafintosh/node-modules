@@ -74,7 +74,7 @@
 		});
 	};
 
-	window.onscroll = function() {
-		if (window.innerHeight + document.body.scrollTop - document.body.scrollHeight >= -150) more();
+	window.onscroll = function(e) {
+		if (window.innerHeight + window.scrollY - document.body.scrollHeight >= -300) more();
 	};
 })();

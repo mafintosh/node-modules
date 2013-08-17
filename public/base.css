@@ -38,12 +38,17 @@ h1, h2 {
 	position: absolute;
 	left: 0;
 	right: 85px;
+	width: 300px;
 }
 
 .oneline input[type="submit"] {
 	position: absolute;
 	right: 0;
 	width: 75px;
+}
+
+#nav .oneline input[type="text"] {
+	width: 540px;
 }
 
 input {
