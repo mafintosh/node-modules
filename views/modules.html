@@ -1,11 +1,11 @@
-<% if (!modules.length) { %>
+<% if (!modules.length && locals.warning !== false) { %>
 	<div class="warn block">
 		<h2>No modules were found</h2>
 		<span>Try searching for some more generic like <a href="/search?q=test+framework">test framework</a> or <a href="/search?q=database">database</a></span>
 	</div>
 <% } %>
 <% modules.forEach(function(mod) { %>
-	<div class="module" data-score="<%= mod.score %>">
+	<div class="module" data-marker="<%= mod.marker %>">
 		<% if (mod.stars) { %>
 			<span class="stars"><%= mod.stars %></span>
 		<% } %>

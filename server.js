@@ -21,8 +21,9 @@ var cache = LRU(5000);
 
 var search = function(request, callback) {
 	var q = request.query.q || '';
-	var limit = parseInt(request.query.limit || 50, 10);
-	request.user.search(q, {limit:limit}, callback);
+	var limit = parseInt(request.query.limit || 20, 10);
+	var marker = request.query.marker;
+	request.user.search(q, {limit:limit, marker:marker}, callback);
 };
 
 var fingerprint = function(url) {
@@ -100,13 +101,14 @@ app.get('/search.ansi', function(request, response) {
 app.get('/search', function(request, response) {
 	var query = request.query.q || '';
 	var view = request.query.partial ? 'modules.html' : 'search.html';
-	var force = request.query.force;
+	var force = request.query.force || request.query.partial;
+	var warning = !request.query.marker;
 
-	if (!force && !request.user.indexed) return response.render('search.html', {query:query});
+	if (!force && !request.user.indexed) return response.render('search.html', {query:query, warning:warning});
 
 	search(request, function(err, modules) {
 		if (err) return response.error(err);
-		response.render(view, {modules:modules, query:query});
+		response.render(view, {modules:modules, query:query, warning:warning});
 	});
 });
 
