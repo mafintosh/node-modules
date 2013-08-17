@@ -15,24 +15,18 @@ var COOKIE_MAX_AGE = 31 * 24 * 3600 * 1000; // 1 month
 var PRODUCTION = process.env.NODE_ENV === 'production';
 var REVISION_HEAD = __dirname+'/.git/refs/heads/master';
 var REVISION = PRODUCTION && fs.existsSync(REVISION_HEAD) && fs.readFileSync(REVISION_HEAD, 'utf-8').trim();
+var DEFAULT_LIMIT = 20;
 
 var app = root();
 var cache = LRU(5000);
 
-var search = function(request, callback) {
-	var q = request.query.q || '';
-	var limit = parseInt(request.query.limit || 20, 10);
-	var marker = request.query.marker;
-	request.user.search(q, {limit:limit, marker:marker}, callback);
-};
+var modules = thunky(function(callback) {
+	db.meta.get('modules', callback);
+});
 
 var fingerprint = function(url) {
 	return REVISION ? 'http://dzdv0sfntaeum.cloudfront.net/'+REVISION+url : url;
 };
-
-var modules = thunky(function(callback) {
-	db.meta.get('modules', callback);
-});
 
 pejs.compress = true;
 app.use('response.render', function(filename, locals) {
@@ -91,22 +85,26 @@ app.get('/meta/users', function(request, response) {
 });
 
 app.get('/search.ansi', function(request, response) {
-	search(request, function(err, modules) {
+	var query = request.query.q || '';
+	var limit = parseInt(request.query.limit, 10) || DEFAULT_LIMIT;
+
+	request.user.search(query, {limit:limit}, function(err, modules) {
 		if (err) return response.error(500, '(error)'.red+' - '+err.message);
 		response.setHeader('Content-Type', 'text/plain; charset=utf-8');
 		response.send(modules.map(ansi).join('\n')+'\n');
 	});
 });
 
-app.get('/search', function(request, response) {
+app.get('/search', function(request, response) { // no limit option as we autoscroll
 	var query = request.query.q || '';
 	var view = request.query.partial ? 'modules.html' : 'search.html';
 	var force = request.query.force || request.query.partial;
-	var warning = !request.query.marker;
+	var marker = request.query.marker;
+	var warning = !marker; // if marker we already found something...
 
 	if (!force && !request.user.indexed) return response.render('search.html', {query:query, warning:warning});
 
-	search(request, function(err, modules) {
+	request.user.search(query, {limit:DEFAULT_LIMIT, marker:marker}, function(err, modules) {
 		if (err) return response.error(err);
 		response.render(view, {modules:modules, query:query, warning:warning});
 	});
