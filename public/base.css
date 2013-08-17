@@ -61,6 +61,10 @@ input {
 	padding: 7px;
 }
 
+input[type="text"] {
+	height: 18px;
+}
+
 input[type="submit"] {
 	background-color: #3a87ad;
 	color: #fff;
@@ -68,6 +72,7 @@ input[type="submit"] {
 	padding-right: 10px;
 	cursor: pointer;
 	-webkit-appearance: none;
+	-moz-appearance: none;
 }
 
 #frontpage {

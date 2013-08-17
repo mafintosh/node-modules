@@ -7,7 +7,6 @@
 		window.QUERY=<%- JSON.stringify(encodeURIComponent(query)) %>;
 		window.USERNAME=<%- JSON.stringify(encodeURIComponent(username)) %>;
 	</script>
-	<script src="<%- fingerprint('/public/search.js') %>"></script>
 </head>
 <body>
 	<div id="nav">
@@ -20,6 +19,7 @@
 			</form>
 		</div>
 	</div>
+	<script src="<%- fingerprint('/public/search.js') %>"></script>
 	<% if (locals.modules) { %>
 		<div id="search" class="main offset">
 			<%{ 'modules.html' }%>
