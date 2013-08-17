@@ -74,15 +74,21 @@ var lookup = function(name, opts, callback) {
 		if (!data.time) return callback();
 
 		var versions = Object.keys(data.time);
-		var latest = versions[versions.length-1];
+
+		var min = versions.reduce(function(min, cur) {
+			return data.time[min] < data.time[cur] ? min : cur;
+		});
+		var max = versions.reduce(function(max, cur) {
+			return data.time[max] > data.time[cur] ? max : cur;
+		});
 
 		mod.name = name;
-		mod.version = latest;
+		mod.version = max;
 
-		mod.created = data.time[versions[0]];
-		mod.updated = data.time[latest];
+		mod.created = data.time[min];
+		mod.updated = data.time[max];
 
-		data = data.versions[latest];
+		data = data.versions[max];
 
 		mod.url = 'https://npmjs.org/package/'+enc(name);
 		mod.maintainer = npmUser.name;
@@ -195,8 +201,16 @@ var encJSON = function(val) {
 var parseRepository = function(repo) {
 	if (typeof repo === 'object' && repo) return parseRepository(repo.url);
 	if (typeof repo !== 'string' || repo.indexOf('github.com') === -1) return '';
-	return repo.split('#')[0].replace(/\.git$/i, '').split('/').slice(-2).join('/');
+	return repo.split('#')[0].replace(/\.git$/i, '').split('/').slice(-2).join('/').split(':').pop();
 };
+
+if (argv.module) {
+	lookup(argv.module, {}, function(err, mod) {
+		if (err) throw err;
+		console.log(mod);
+	});
+	return;
+}
 
 db.meta.get('updated', function(err, updated) {
 	if (err || argv.all) updated = new Date(0).toISOString();
