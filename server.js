@@ -3,11 +3,18 @@ var send = require('send');
 var pejs = require('pejs');
 var LRU = require('lru-cache');
 var cookie = require('cookie');
+var thunky = require('thunky');
+var fs = require('fs');
+var JSONStream = require('JSONStream');
+var pump = require('pump');
 var ansi = require('./ansi');
 var users = require('./users');
 var db = require('./db');
 
 var COOKIE_MAX_AGE = 31 * 24 * 3600 * 1000; // 1 month
+var PRODUCTION = true;//process.env.NODE_ENV === 'production';
+var REVISION_HEAD = __dirname+'/.git/refs/heads/master';
+var REVISION = PRODUCTION && fs.existsSync(REVISION_HEAD) && fs.readFileSync(REVISION_HEAD, 'utf-8').trim();
 
 var app = root();
 var cache = LRU(5000);
@@ -19,8 +26,12 @@ var search = function(request, callback) {
 };
 
 var fingerprint = function(url) {
-	return url;
+	return REVISION ? 'http://dzdv0sfntaeum.cloudfront.next/rev/'+REVISION+url : url;
 };
+
+var modules = thunky(function(callback) {
+	db.meta.get('modules', callback);
+});
 
 pejs.compress = true;
 app.use('response.render', function(filename, locals) {
@@ -32,6 +43,13 @@ app.use('response.render', function(filename, locals) {
 		if (err) return response.error(500, err.stack);
 		response.send(html);
 	});
+});
+
+app.get('/rev/{rev}/*', function(request, response) {
+	var maxAge = 365 * 24 * 3600;
+	response.setHeader('Expires', new Date(Date.now() + maxAge * 1000).toGMTString());
+	response.setHeader('Cache-Control', 'public, max-age='+maxAge);
+	send(request, __dirname+'/public/'+request.params.glob).pipe(response);
 });
 
 app.get('/public/*', function(request, response) {
@@ -60,10 +78,15 @@ app.all(function(request, response, next) {
 });
 
 app.get('/', function(request, response) {
-	db.meta.get('modules', function(err, modules) {
+	modules(function(err, count) {
 		if (err) return response.error(err);
-		response.render('index.html', {modules:modules});
+		response.render('index.html', {modules:count});
 	});
+});
+
+app.get('/meta/users', function(request, response) {
+	response.setHeader('Content-Type', 'application/json; charset=utf-8');
+	pump(db.users.createKeyStream(), JSONStream.stringify(), response);
 });
 
 app.get('/search.ansi', function(request, response) {
