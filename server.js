@@ -12,7 +12,7 @@ var users = require('./users');
 var db = require('./db');
 
 var COOKIE_MAX_AGE = 31 * 24 * 3600 * 1000; // 1 month
-var PRODUCTION = true;//process.env.NODE_ENV === 'production';
+var PRODUCTION = process.env.NODE_ENV === 'production';
 var REVISION_HEAD = __dirname+'/.git/refs/heads/master';
 var REVISION = PRODUCTION && fs.existsSync(REVISION_HEAD) && fs.readFileSync(REVISION_HEAD, 'utf-8').trim();
 
@@ -26,7 +26,7 @@ var search = function(request, callback) {
 };
 
 var fingerprint = function(url) {
-	return REVISION ? 'http://dzdv0sfntaeum.cloudfront.next/rev/'+REVISION+url : url;
+	return REVISION ? 'http://dzdv0sfntaeum.cloudfront.net/rev/'+REVISION+url : url;
 };
 
 var modules = thunky(function(callback) {
