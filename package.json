@@ -20,7 +20,8 @@
     "cookie": "~0.1.0",
     "colors": "~0.6.1",
     "thunky": "~0.1.0",
-    "pump": "~0.1.2"
+    "pump": "~0.1.2",
+    "stream-wrapper": "~0.1.1"
   },
   "main": "server.js"
 }
