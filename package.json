@@ -1,6 +1,6 @@
 {
   "name": "node-search",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "repository": "git://github.com/mafintosh/node-search.git",
   "dependencies": {
     "sorted-intersect-stream": "~0.2.5",
