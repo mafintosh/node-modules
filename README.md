@@ -1,11 +1,11 @@
 # node-search
 
-Search engine for node modules
+Search engine for node modules. Includes the frontend for [node-modules.com](http://node-modules.com).
 
 ## Installation
 
-	git clone git@github.com:mafintosh/node-search.git
-	npm rebuild
+	git clone git@github.com:mafintosh/node-modules.git
+	npm install .
 
 ## Run
 
