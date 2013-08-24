@@ -1,10 +1,12 @@
-var through = require('through');
 var intersect = require('sorted-intersect-stream');
 var deleteRange = require('level-delete-range');
+var stream = require('stream-wrapper');
 var once = require('once');
 var pump = require('pump');
 var db = require('./db');
 var tokenize = require('./tokenize');
+
+stream = stream.defaults({objectMode:true});
 
 var noop = function() {};
 
@@ -163,7 +165,7 @@ exports.add = function(user, callback) {
 
 		pump(
 			db.modules.createValueStream(),
-			through(function(mod) {
+			stream.transform(function(mod, enc, callback) {
 				var self = this;
 				var username = mod.github && mod.github.username;
 				var value = pack(mod, user);
@@ -179,10 +181,11 @@ exports.add = function(user, callback) {
 				});
 
 				keys.forEach(function(key) {
-					self.queue({key:key, value:value});
+					self.push({key:key, value:value});
 				});
 
-				self.queue({key:encode(user.username, 'keys', mod.name), value:JSON.stringify(keys)});
+				self.push({key:encode(user.username, 'keys', mod.name), value:JSON.stringify(keys)});
+				callback();
 			}),
 			db.index.createWriteStream({valueEncoding:'utf-8'}),
 			callback
