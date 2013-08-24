@@ -149,30 +149,45 @@ exports.remove = function(user, callback) {
 	}, callback);
 };
 
+exports.update = function(user, modules, callback) {
+	if (!callback) callback = noop;
+	if (!user) user = exports.nobody;
+};
+
 exports.add = function(user, callback) {
 	if (!callback) callback = noop;
 	if (!user) user = exports.nobody;
 
-	pump(
-		db.modules.createValueStream(),
-		through(function(mod) {
-			var self = this;
-			var username = mod.github && mod.github.username;
-			var value = pack(mod, user);
-			var score = value[1];
+	exports.remove(user, function(err) {
+		if (err) return callback(err);
 
-			modules[mod.name] = mod; // let's populate the cache while we're at it
-			value = JSON.stringify(value);
+		pump(
+			db.modules.createValueStream(),
+			through(function(mod) {
+				var self = this;
+				var username = mod.github && mod.github.username;
+				var value = pack(mod, user);
+				var score = value[1];
 
-			var tokens = tokenize(mod.keywords.join(' ')+' '+mod.description+' '+mod.name+(username ? ' @'+username : ''))
+				modules[mod.name] = mod; // let's populate the cache while we're at it
+				value = JSON.stringify(value);
 
-			tokens.concat('@').forEach(function(token) {
-				self.queue({key:encode(user.username, token, marker(mod.name, score)), value:value});
-			});
-		}),
-		db.index.createWriteStream({valueEncoding:'utf-8'}),
-		callback
-	);
+				var tokens = tokenize(mod.keywords.join(' ')+' '+mod.description+' '+mod.name+(username ? ' @'+username : ''));
+
+				var keys = tokens.concat('@').map(function(token) {
+					return encode(user.username, 'values', token, marker(mod.name, score));
+				});
+
+				keys.forEach(function(key) {
+					self.queue({key:key, value:value});
+				});
+
+				self.queue({key:encode(user.username, 'keys', mod.name), value:JSON.stringify(keys)});
+			}),
+			db.index.createWriteStream({valueEncoding:'utf-8'}),
+			callback
+		);
+	});
 };
 
 exports.search = function(user, query, opt, callback) {
@@ -186,9 +201,10 @@ exports.search = function(user, query, opt, callback) {
 
 	var stream = query
 		.map(function(word) {
+			var prefix = encode(user.username, 'values', word);
 			return db.index.createReadStream({
-				start: encode(user.username, word)+(opt.marker ? '~'+opt.marker+'~' : '~'),
-				end: encode(user.username, word)+'~~',
+				start: prefix+(opt.marker ? '~'+opt.marker+'~' : '~'),
+				end: prefix+'~~',
 				valueEncoding: 'utf-8'
 			});
 		})
