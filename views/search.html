@@ -27,15 +27,15 @@
 	<% } else { %>
 		<div class="main offset">
 			<div class="warn block" id="index-progress">
-				<h2><%= username || 'registry' %> is being indexed</span><span id="progress"></span></h2>
-				<span>Please wait while your personal search index is being generated</span>
+				<h2>Personalizing results for <%= username || 'registry' %></span><span id="progress"></span></h2>
+				<span>Please wait while your personal search index is being generated.<br>This can take up to two minutes. Will only happen the first time you use this.</span>
 			</div>
 			<div class="warn block hidden" id="index-complete">
-				<h2><%= username || 'registry' %> was succesfully indexed</span></h2>
-				<span>Indexing took <b><span id="time">21.4</span> seconds</b></span>
+				<h2>Succesfully personalized results for <%= username || 'registry' %></span></h2>
+				<span>Personalizing took <b><span id="time">21.4</span> seconds</b></span>
 			</div>
 			<div class="error block hidden" id="index-error">
-				<h2><%= username || 'registry' %> <span id="status-text">could not be indexed!</span></h2>
+				<h2>Coult not personalize results for <%= username || 'registry' %> <span id="status-text">!</span></h2>
 				<span>Are you sure the Github username is correct? Result below uses general ranking</span>
 			</div>
 		</div>

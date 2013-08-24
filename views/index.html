@@ -13,10 +13,12 @@
 					<input tabindex="1" type="text" name="q" id="q" placeholder="Enter a search query" autofocus>
 					<input tabindex="3" type="submit" value="Search">
 				</div>
-				<span class="text">Ranking is based on who this Github user follows and stars</span>
-				<div class="oneline">
-					<input tabindex="2" type="text" name="u" id="u" placeholder="Enter a Github user (optional)" value="<%= username %>">
-				</div>
+				<% if (personalize) { %>
+					<span class="text">Ranking is based on who this Github user follows and stars</span>
+					<div class="oneline">
+						<input tabindex="2" type="text" name="u" id="u" placeholder="Enter a Github user (optional)" value="<%= username %>">
+					</div>
+				<% } %>
 			</form>
 		</div>
 	</div>

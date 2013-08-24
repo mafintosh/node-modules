@@ -34,6 +34,7 @@ app.use('response.render', function(filename, locals) {
 	locals = locals || {};
 	locals.username = this.request.username;
 	locals.fingerprint = fingerprint;
+	locals.personalize = this.request.personalize;
 	pejs.render(filename, locals, function(err, html) {
 		if (err) return response.error(500, err.stack);
 		response.send(html);
@@ -59,6 +60,8 @@ app.all(function(request, response, next) {
 	username = username.toLowerCase();
 	request.username = username;
 	request.user = cache.get(username);
+	request.personalize = !!('personalize' in request.query || username);
+
 	response.setHeader('Set-Cookie', cookie.serialize('username', request.username, {maxAge:COOKIE_MAX_AGE}));
 
 	if (request.user) return next();
