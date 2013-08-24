@@ -1,3 +1,4 @@
 db
 build
 .bin
+node_modules
