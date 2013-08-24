@@ -3,6 +3,7 @@
 <head>
 	<title><%= query %></title>
 	<link rel="stylesheet" type="text/css" href="<%- fingerprint('/public/base.css') %>">
+	<%{ 'partials/google-analytics.html' }%>
 	<script>
 		window.QUERY=<%- JSON.stringify(encodeURIComponent(query)) %>;
 		window.USERNAME=<%- JSON.stringify(encodeURIComponent(username)) %>;
@@ -22,7 +23,7 @@
 	<script src="<%- fingerprint('/public/search.js') %>"></script>
 	<% if (locals.modules) { %>
 		<div id="search" class="main offset">
-			<%{ 'modules.html' }%>
+			<%{ 'partials/modules.html' }%>
 		</div>
 	<% } else { %>
 		<div class="main offset">
