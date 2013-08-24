@@ -227,5 +227,7 @@ exports.search = function(user, query, opt, callback) {
 		onend();
 	});
 
-	pump(stream, onend);
+	stream.on('close', onend);
+	stream.on('error', onend);
+	stream.on('end', onend);
 };
