@@ -190,21 +190,14 @@ var indexStream = function(user) {
 	});
 };
 
-exports.update = function(user, modules, callback) {
+exports.update = function(user, callback) {
 	if (!callback) callback = noop;
 	if (!user) user = exports.nobody;
 
 	pump(
-		stream.readable(function() {
-			var self = this;
-			var name = modules.pop();
-
-			if (!name) return self.push(null);
-
-			db.modules.get(name, function(err, module) {
-				if (err) return self.emit('error', err);
-				self.push(module);
-			});
+		db.updates.createKeyStream(),
+		stream.transform(function(name, enc, callback) {
+			db.modules.get(name, callback);
 		}),
 		indexStream(user, true),
 		db.index.createWriteStream({valueEncoding:'utf-8'}),

@@ -80,12 +80,12 @@ var User = function(username, state) {
 	});
 };
 
-User.prototype.update = function(modules, callback) {
+User.prototype.update = function(callback) {
 	if (!callback) callback = noop;
 
 	this.json(function(err, user) {
 		if (err) return callback(err);
-		index.update(user, modules, callback);
+		index.update(user, callback);
 	});
 };
 
