@@ -4,6 +4,7 @@ var request = require('request');
 var optimist = require('optimist');
 var transform = require('parallel-transform');
 var JSONStream = require('JSONStream');
+var stream = require('stream-wrapper');
 var getJSON = require('../getJSON');
 var db = require('../db');
 
@@ -236,6 +237,10 @@ db.meta.get('updated', function(err, updated) {
 	request(url)
 		.pipe(JSONStream.parse('rows.*'))
 		.pipe(transform(MAX_PARALLEL, onupdated))
+		.pipe(stream.transform({objectMode:true}, function(data, enc, callback) {
+			this.push(data);
+			db.updates.put(data.name, data.updated, callback);
+		}))
 		.on('data', function(data) {
 			log('fetched '+(++visited)+' ('+data.name+')');
 		})
