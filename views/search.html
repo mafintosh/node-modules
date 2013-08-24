@@ -12,7 +12,7 @@
 <body>
 	<div id="nav">
 		<div class="main">
-			<a href="/"><img src="<%- fingerprint('/public/npm-small.png') %>"></a>
+			<a href="/"><img src="<%- fingerprint('/public/logo/logo1b.png') %>"></a>
 			<form action="/search" class="oneline">
 				<input type="text" name="q" id="q" autofocus placeholder="Search for modules" value="<%= query %>">
 				<input type="hidden" name="u" id="u" value="<%= username %>">
@@ -23,7 +23,7 @@
 	<script src="<%- fingerprint('/public/search.js') %>"></script>
 	<% if (locals.modules) { %>
 		<div id="search" class="main offset">
-			<%{ 'partials/modules.html' }%>
+			<%{ 'partials/modules.html'	 }%>
 		</div>
 	<% } else { %>
 		<div class="main offset">

@@ -52,7 +52,7 @@ h1, h2 {
 }
 
 #nav .oneline input[type="text"] {
-	width: 540px;
+	width: 353px;
 }
 
 input {
@@ -107,13 +107,17 @@ input[type="submit"] {
 	padding: 14px 0;
 }
 
+#nav .main img {
+	margin-top: -6px;
+}
+
 #nav a {
 	float: left;
 	border: none;
 }
 
 #nav form {
-	margin-left: 140px;
+	margin-left: 320px;
 }
 
 .offset {

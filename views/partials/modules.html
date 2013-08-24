@@ -2,7 +2,7 @@
 <% if (!modules.length && locals.warning !== false) { %>
 	<div class="warn block">
 		<h2>No modules were found</h2>
-		<span>Try searching for some more generic like <a href="/search?q=test+framework">test framework</a> or <a href="/search?q=database">database</a></span>
+		<span>Try searching for something less specific, e.g. <a href="/search?q=web+framework">web framework</a> or <a href="/search?q=database">database</a></span>
 	</div>
 <% } %>
 <% if (modules.length && locals.warning !== false) { %>
@@ -10,7 +10,7 @@
 		<% if (username) { %>
 			<span>These results are personalized to <a href="http://github.com/<%= username %>"><%= username %></a> using <span class="bold">stars</span> and <span class="bold">follows</span> on Github.</span>
 		<% } else { %>
-			<span>For better results using your <span class="bold">project stars</span> and <span class="bold">follows</span> on Github, <a href="/?personalize">personalize your account</a>.
+			<span>For better results using your <span class="bold">project stars</span> and <span class="bold">follows</span> on Github, <a href="/?personalize&q=<%= query %>">personalize your account</a>.
 		<% } %>
 	</div>
 <% } %>

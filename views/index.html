@@ -1,27 +1,27 @@
 <!doctype html>
 <html>
-<head>
-	<title>node_modules</title>
-	<link rel="stylesheet" type="text/css" href="<%- fingerprint('/public/base.css') %>">
-	<%{ 'partials/google-analytics.html' }%>
-</head>
-<body>
-	<div class="main">
-		<div id="frontpage">
-			<form action="/search">
-				<span class="text">Search through <%= modules %> node modules</span>
-				<div class="oneline">
-					<input tabindex="1" type="text" name="q" id="q" placeholder="Enter a search query" autofocus>
-					<input tabindex="3" type="submit" value="Search">
-				</div>
-				<% if (personalize) { %>
-					<span class="text">Ranking is based on who this Github user follows and stars</span>
+	<head>
+		<title>node_modules</title>
+		<link rel="stylesheet" type="text/css" href="<%- fingerprint('/public/base.css') %>">
+		<%{ 'partials/google-analytics.html' }%>
+	</head>
+	<body>
+		<div class="main">
+			<div id="frontpage">
+				<form action="/search">
+					<span class="text">Search through <%= modules %> node modules</span>
 					<div class="oneline">
-						<input tabindex="2" type="text" name="u" id="u" placeholder="Enter a Github user (optional)" value="<%= username %>">
+						<input tabindex="1" type="text" name="q" id="q" placeholder="Enter a search query" value="<%= locals.query || '' %>" <%= locals.query ? '' : 'autofocus' %>>
+						<input tabindex="3" type="submit" value="Search">
 					</div>
-				<% } %>
-			</form>
+					<% if (personalize) { %>
+						<span class="text">Ranking is based on who this Github user follows and stars</span>
+						<div class="oneline">
+							<input tabindex="2" type="text" name="u" id="u" placeholder="Enter a Github user (optional)" value="<%= username %>" <%= locals.query ? 'autofocus' : '' %>>
+						</div>
+					<% } %>
+				</form>
+			</div>
 		</div>
-	</div>
-</body>
+	</body>
 </html>

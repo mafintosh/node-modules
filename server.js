@@ -35,6 +35,7 @@ app.use('response.render', function(filename, locals) {
 	locals.username = this.request.username;
 	locals.fingerprint = fingerprint;
 	locals.personalize = this.request.personalize;
+	locals.query = this.request.query.q || '';
 	pejs.render(filename, locals, function(err, html) {
 		if (err) return response.error(500, err.stack);
 		response.send(html);
