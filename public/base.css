@@ -76,11 +76,11 @@ input[type="submit"] {
 }
 
 #frontpage {
-	width: 400px;
+	width: 408px;
 	margin: auto;
 	margin-top: 20%;
-	padding-top: 165px;
-	background-image: url('/public/npm-large.png');
+	padding-top: 175px;
+	background-image: url('/public/logo/logo4b.png');
 	background-repeat: no-repeat;
 }
 
