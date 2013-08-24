@@ -10,6 +10,7 @@ var sub = function(db, name) {
 sub(db, 'index');
 sub(db, 'etags');
 sub(db, 'modules');
+sub(db, 'updates');
 sub(db, 'meta');
 sub(db, 'users');
 
