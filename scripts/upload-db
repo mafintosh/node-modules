@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd ..
+tar cz db > /tmp/node-modules.tar.gz
+s3cmd put -P /tmp/node-modules.tar.gz s3://mathiasbuus/public/node-modules.tar.gz
