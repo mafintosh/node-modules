@@ -80,6 +80,15 @@ var User = function(username, state) {
 	});
 };
 
+User.prototype.update = function(modules, callback) {
+	if (!callback) callback = noop;
+
+	this.json(function(err, user) {
+		if (err) return callback(err);
+		index.update(user, modules, callback);
+	});
+};
+
 User.prototype.search = function(query, opts, callback) {
 	if (typeof opts === 'function') return this.search(query, null, opts);
 

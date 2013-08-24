@@ -151,46 +151,77 @@ exports.remove = function(user, callback) {
 	}, callback);
 };
 
+var indexStream = function(user) {
+	return stream.transform(function(mod, enc, callback) {
+		var self = this;
+		var name = mod.name;
+
+		var onindex = function() {
+			var username = mod.github && mod.github.username;
+			var value = pack(mod, user);
+			var score = value[1];
+
+			modules[name] = mod; // let's populate the cache while we're at it
+			value = JSON.stringify(value);
+
+			var tokens = tokenize(mod.keywords.join(' ')+' '+mod.description+' '+name+(username ? ' @'+username : ''));
+
+			var keys = tokens.concat('@').map(function(token) {
+				return encode(user.username, 'values', token, marker(name, score));
+			});
+
+			keys.forEach(function(key) {
+				self.push({key:key, value:value});
+			});
+
+			self.push({key:encode(user.username, 'keys', name), value:JSON.stringify(keys)});
+			callback();
+		};
+
+		db.index.get(encode(user.username, 'keys', name), function(err, keys) {
+			if (err) return onindex();
+
+			keys.forEach(function(key) {
+				self.push({key:key, type:'del'});
+			});
+
+			onindex();
+		});
+	});
+};
+
 exports.update = function(user, modules, callback) {
 	if (!callback) callback = noop;
 	if (!user) user = exports.nobody;
+
+	pump(
+		stream.readable(function() {
+			var self = this;
+			var name = modules.pop();
+
+			if (!name) return self.push(null);
+
+			db.modules.get(name, function(err, module) {
+				if (err) return self.emit('error', err);
+				self.push(module);
+			});
+		}),
+		indexStream(user, true),
+		db.index.createWriteStream({valueEncoding:'utf-8'}),
+		callback
+	);
 };
 
 exports.add = function(user, callback) {
 	if (!callback) callback = noop;
 	if (!user) user = exports.nobody;
 
-	exports.remove(user, function(err) {
-		if (err) return callback(err);
-
-		pump(
-			db.modules.createValueStream(),
-			stream.transform(function(mod, enc, callback) {
-				var self = this;
-				var username = mod.github && mod.github.username;
-				var value = pack(mod, user);
-				var score = value[1];
-
-				modules[mod.name] = mod; // let's populate the cache while we're at it
-				value = JSON.stringify(value);
-
-				var tokens = tokenize(mod.keywords.join(' ')+' '+mod.description+' '+mod.name+(username ? ' @'+username : ''));
-
-				var keys = tokens.concat('@').map(function(token) {
-					return encode(user.username, 'values', token, marker(mod.name, score));
-				});
-
-				keys.forEach(function(key) {
-					self.push({key:key, value:value});
-				});
-
-				self.push({key:encode(user.username, 'keys', mod.name), value:JSON.stringify(keys)});
-				callback();
-			}),
-			db.index.createWriteStream({valueEncoding:'utf-8'}),
-			callback
-		);
-	});
+	pump(
+		db.modules.createValueStream(),
+		indexStream(user),
+		db.index.createWriteStream({valueEncoding:'utf-8'}),
+		callback
+	);
 };
 
 exports.search = function(user, query, opt, callback) {
