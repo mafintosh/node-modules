@@ -1,0 +1,13 @@
+#!/usr/bin/env node
+
+var db = require('../db');
+var deleteRange = require('level-delete-range');
+
+deleteRange(db.users, {}, function(err) {
+	if (err) throw err;
+	console.log('removed users');
+	deleteRange(db.index, {}, function(err) {
+		if (err) throw err;
+		console.log('removed indices');
+	});
+});
