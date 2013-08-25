@@ -14,7 +14,7 @@
 						<input tabindex="3" type="submit" value="Search">
 					</div>
 					<% if (username) { %>
-						<span class="text">Your searches are ranked by the Github account, <a href="http://github.com/<%= username %>"><%= username %></a>. <a href="/?u=">Unset</a></span>
+						<span class="text">Searches are personalized to <a href="http://github.com/<%= username %>"><%= username %></a>. <a href="/?u=">Reset account</a>.</span>
 					<% } %>
 				</form>
 				<%{ 'partials/menu.html' }%>
