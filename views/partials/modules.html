@@ -8,7 +8,7 @@
 <% if (modules.length && locals.warning !== false) { %>
 	<div class="personalize block">
 		<% if (username) { %>
-			<span>These results are personalized to <a href="http://github.com/<%= username %>"><%= username %></a> using <span class="bold">stars</span> and <span class="bold">follows</span> on Github.</span>
+			<span>Results are personalized to <a href="http://github.com/<%= username %>"><%= username %></a> using <span class="bold">stars</span> and <span class="bold">follows</span> on Github.</span>
 		<% } else { %>
 			<span>For better results using your <span class="bold">project stars</span> and <span class="bold">follows</span> on Github, <a href="/?personalize&q=<%= query %>">personalize your account</a>.
 		<% } %>
