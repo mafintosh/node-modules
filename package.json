@@ -1,7 +1,7 @@
 {
-  "name": "node-search",
+  "name": "node-modules",
   "version": "0.1.0",
-  "repository": "git://github.com/mafintosh/node-search.git",
+  "repository": "git://github.com/mafintosh/node-modules.git",
   "dependencies": {
     "sorted-intersect-stream": "~0.2.5",
     "send": "~0.1.4",
