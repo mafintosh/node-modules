@@ -1,4 +1,4 @@
-# node-search
+# node-modules
 
 Search engine for node modules. Includes the frontend for [node-modules.com](http://node-modules.com).
 
