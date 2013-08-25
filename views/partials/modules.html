@@ -10,7 +10,12 @@
 		<% if (username) { %>
 			<span>Results are personalized to <a href="http://github.com/<%= username %>"><%= username %></a> using <span class="bold">stars</span> and <span class="bold">follows</span> on Github.</span>
 		<% } else { %>
-			<span>For better results using your <span class="bold">project stars</span> and <span class="bold">follows</span> on Github, <a href="/?personalize&q=<%= query %>">personalize your account</a>.
+			<%
+				var redirectUrl = 'http://node-modules.com/authorize?q='+query;
+				var githubUrl = 'https://github.com/login/oauth/authorize?client_id='+githubClientId;
+				githubUrl += '&redirect_uri=' + encodeURIComponent(redirectUrl);
+			%>
+			<span>For better results using your <span class="bold">project stars</span> and <span class="bold">follows</span> on Github, <a href="<%= githubUrl %>">personalize your account</a>.
 		<% } %>
 	</div>
 <% } %>

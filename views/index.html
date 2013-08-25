@@ -10,14 +10,11 @@
 			<div id="frontpage">
 				<form action="/search">
 					<div class="oneline" style="margin-top:10px">
-						<input tabindex="1" type="text" name="q" id="q" placeholder="Enter a search query" value="<%= locals.query || '' %>" <%= locals.query ? '' : 'autofocus' %>>
+						<input tabindex="1" type="text" name="q" id="q" placeholder="Enter a search query" value="<%= locals.query || '' %>" autofocus>
 						<input tabindex="3" type="submit" value="Search">
 					</div>
-					<% if (personalize) { %>
-						<span class="text">Ranking is based on who this Github user follows and stars</span>
-						<div class="oneline">
-							<input tabindex="2" type="text" name="u" id="u" placeholder="Enter a Github user (optional)" value="<%= username %>" <%= locals.query ? 'autofocus' : '' %>>
-						</div>
+					<% if (username) { %>
+						<span class="text">Your searches is ranked by the Github account, <a href="http://github.com/<%= username %>"><%= username %></a>. <a href="/?u=">Unset</a></span>
 					<% } %>
 				</form>
 				<%{ 'partials/menu.html' }%>

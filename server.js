@@ -7,6 +7,8 @@ var thunky = require('thunky');
 var fs = require('fs');
 var JSONStream = require('JSONStream');
 var pump = require('pump');
+var req = require('request');
+var qs = require('querystring');
 var ansi = require('./ansi');
 var users = require('./users');
 var db = require('./db');
@@ -16,6 +18,8 @@ var PRODUCTION = process.env.NODE_ENV === 'production';
 var REVISION_HEAD = __dirname+'/.git/refs/heads/master';
 var REVISION = PRODUCTION && fs.existsSync(REVISION_HEAD) && fs.readFileSync(REVISION_HEAD, 'utf-8').trim();
 var DEFAULT_LIMIT = 20;
+var GITHUB_CLIENT_ID = '6eda13aad78e1b1c4f5f';
+var GITHUB_SECRET = process.env.GITHUB_SECRET;
 
 var app = root();
 var cache = LRU(5000);
@@ -34,8 +38,8 @@ app.use('response.render', function(filename, locals) {
 	locals = locals || {};
 	locals.username = this.request.username;
 	locals.fingerprint = fingerprint;
-	locals.personalize = this.request.personalize;
 	locals.query = this.request.query.q || '';
+	locals.githubClientId = GITHUB_CLIENT_ID;
 	pejs.render(filename, locals, function(err, html) {
 		if (err) return response.error(500, err.stack);
 		response.send(html);
@@ -61,7 +65,6 @@ app.all(function(request, response, next) {
 	username = username.toLowerCase();
 	request.username = username;
 	request.user = cache.get(username);
-	request.personalize = !!('personalize' in request.query || username);
 
 	response.setHeader('Set-Cookie', cookie.serialize('username', request.username, {maxAge:COOKIE_MAX_AGE}));
 
@@ -132,7 +135,32 @@ app.get('/search', function(request, response) { // no limit option as we autosc
 
 	request.user.search(query, {limit:DEFAULT_LIMIT, marker:marker}, function(err, modules) {
 		if (err) return response.error(err);
+
 		response.render(view, {modules:modules, query:query, warning:warning});
+	});
+});
+
+app.get('/authorize', function(request, response) {
+	req.post({
+		url: 'https://github.com/login/oauth/access_token',
+		form: {
+			client_id: GITHUB_CLIENT_ID,
+			client_secret: GITHUB_SECRET,
+			code: request.query.code
+		}
+	}, function(err, res, body) {
+		if (err) return response.error(err);
+		var access_token = qs.parse(body).access_token;
+
+		req('https://api.github.com/user?access_token='+access_token, function(err, res, body) {
+			if (err) return response.error(err);
+			var user = JSON.parse(body);
+			var login = user.login;
+
+			response.statusCode = 302;
+			response.setHeader('Location', 'http://node-modules.com/search?q='+request.query.q+'&u='+login);
+			response.end();
+		});
 	});
 });
 
