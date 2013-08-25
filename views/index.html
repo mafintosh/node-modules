@@ -9,8 +9,7 @@
 		<div class="main">
 			<div id="frontpage">
 				<form action="/search">
-					<span class="text">Search through <%= modules %> node modules</span>
-					<div class="oneline">
+					<div class="oneline" style="margin-top:10px">
 						<input tabindex="1" type="text" name="q" id="q" placeholder="Enter a search query" value="<%= locals.query || '' %>" <%= locals.query ? '' : 'autofocus' %>>
 						<input tabindex="3" type="submit" value="Search">
 					</div>

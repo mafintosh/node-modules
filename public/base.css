@@ -100,11 +100,13 @@ input[type="submit"] {
 	font-size: 12px;
 }
 
-#frontpage .menu a {
-	padding: 0 5px;
+.menu a {
+	padding-right: 10px;
 }
-#frontpage .menu a:first-child {
-	padding-left: 0;
+
+.menu .subtitle {
+	float: right;
+	margin-right: 96px;
 }
 
 #nav {
