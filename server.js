@@ -114,6 +114,14 @@ app.get('/search', function(request, response) { // no limit option as we autosc
 	});
 });
 
+app.get('/about', function(request, response) {
+	response.render('about.html');
+});
+
+app.get('/mission', function(request, response) {
+	response.render('mission.html');
+});
+
 app.error(404, function(request, response) {
 	response.render('error.html', {title:'404 Not Found', message: 'We cannot find the page you are looking for'});
 });

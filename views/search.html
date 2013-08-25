@@ -1,49 +1,49 @@
 <!doctype html>
 <html>
-<head>
-	<title><%= query %></title>
-	<link rel="stylesheet" type="text/css" href="<%- fingerprint('/public/base.css') %>">
-	<%{ 'partials/google-analytics.html' }%>
-	<script>
-		window.QUERY=<%- JSON.stringify(encodeURIComponent(query)) %>;
-		window.USERNAME=<%- JSON.stringify(encodeURIComponent(username)) %>;
-	</script>
-</head>
-<body>
-	<div id="nav">
-		<div class="main">
-			<a href="/"><img src="<%- fingerprint('/public/logo/logo1b.png') %>"></a>
-			<form action="/search" class="oneline">
-				<input type="text" name="q" id="q" autofocus placeholder="Search for modules" value="<%= query %>">
-				<input type="hidden" name="u" id="u" value="<%= username %>">
-				<input type="submit" value="Search">
-			</form>
-		</div>
-	</div>
-	<script src="<%- fingerprint('/public/search.js') %>"></script>
-	<% if (locals.modules) { %>
-		<div id="search" class="main offset">
-			<%{ 'partials/modules.html'	 }%>
-		</div>
-	<% } else { %>
-		<div class="main offset">
-			<div class="warn block" id="index-progress">
-				<h2>Personalizing results for <%= username || 'registry' %></span><span id="progress"></span></h2>
-				<span>Please wait while your personal search index is being generated.<br>This can take up to two minutes. Will only happen the first time you use this.</span>
-			</div>
-			<div class="warn block hidden" id="index-complete">
-				<h2>Succesfully personalized results for <%= username || 'registry' %></span></h2>
-				<span>Personalizing took <b><span id="time">21.4</span> seconds</b></span>
-			</div>
-			<div class="error block hidden" id="index-error">
-				<h2>Coult not personalize results for <%= username || 'registry' %> <span id="status-text">!</span></h2>
-				<span>Are you sure the Github username is correct? Result below uses general ranking</span>
-			</div>
-		</div>
-		<div id="search" class="main"></div>
+	<head>
+		<title><%= query %></title>
+		<link rel="stylesheet" type="text/css" href="<%- fingerprint('/public/base.css') %>">
+		<%{ 'partials/google-analytics.html' }%>
 		<script>
-			window.onindexing();
+			window.QUERY=<%- JSON.stringify(encodeURIComponent(query)) %>;
+			window.USERNAME=<%- JSON.stringify(encodeURIComponent(username)) %>;
 		</script>
-	<% } %>
-</body>
+	</head>
+	<body>
+		<div id="nav">
+			<div class="main">
+				<a href="/"><img src="<%- fingerprint('/public/logo/logo1b.png') %>"></a>
+				<form action="/search" class="oneline">
+					<input type="text" name="q" id="q" autofocus placeholder="Search for modules" value="<%= query %>">
+					<input type="hidden" name="u" id="u" value="<%= username %>">
+					<input type="submit" value="Search">
+				</form>
+			</div>
+		</div>
+		<script src="<%- fingerprint('/public/search.js') %>"></script>
+		<% if (locals.modules) { %>
+			<div id="search" class="main offset">
+				<%{ 'partials/modules.html'	 }%>
+			</div>
+		<% } else { %>
+			<div class="main offset">
+				<div class="warn block" id="index-progress">
+					<h2>Personalizing results for <%= username || 'registry' %></span><span id="progress"></span></h2>
+					<span>Please wait while your personal search index is being generated.<br>This can take up to two minutes. Will only happen the first time you use this.</span>
+				</div>
+				<div class="warn block hidden" id="index-complete">
+					<h2>Succesfully personalized results for <%= username || 'registry' %></span></h2>
+					<span>Personalizing took <b><span id="time">21.4</span> seconds</b></span>
+				</div>
+				<div class="error block hidden" id="index-error">
+					<h2>Coult not personalize results for <%= username || 'registry' %> <span id="status-text">!</span></h2>
+					<span>Are you sure the Github username is correct? Result below uses general ranking</span>
+				</div>
+			</div>
+			<div id="search" class="main"></div>
+			<script>
+				window.onindexing();
+			</script>
+		<% } %>
+	</body>
 </html>

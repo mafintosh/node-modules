@@ -9,7 +9,7 @@ html, body {
 
 a {
 	text-decoration: none;
-	color: inherit;
+	color: #3a87ad;
 }
 
 a:hover {
@@ -79,7 +79,7 @@ input[type="submit"] {
 	-moz-appearance: none;
 }
 
-#frontpage {
+#frontpage, #about, #mission {
 	width: 408px;
 	margin: auto;
 	margin-top: 20%;
@@ -93,6 +93,18 @@ input[type="submit"] {
 	margin-bottom: 5px;
 	margin-top: 12px;
 	display: block;
+}
+
+.menu {
+	margin: 20px 0;
+	font-size: 12px;
+}
+
+#frontpage .menu a {
+	padding: 0 5px;
+}
+#frontpage .menu a:first-child {
+	padding-left: 0;
 }
 
 #nav {
@@ -120,6 +132,10 @@ input[type="submit"] {
 	margin-left: 320px;
 }
 
+#search a {
+	color: inherit;
+}
+
 .offset {
 	margin-top: 80px;
 }
@@ -138,19 +154,15 @@ input[type="submit"] {
 	font-weight: bold;
 }
 
-.warn a {
-	color: #3a87ad;
-}
-
 .block, .module {
 	margin-bottom: 20px;
 	padding: 20px;
 }
 
-.block.personalize {
+#search .block.personalize {
 	padding: 0;
 }
-.block.personalize a {
+#search .block.personalize a {
 	color: #3a87ad;
 	font-weight: bold;
 }
