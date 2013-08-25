@@ -83,9 +83,31 @@ app.get('/', function(request, response) {
 	});
 });
 
-app.get('/meta/users', function(request, response) {
+app.get('/users.json', function(request, response) {
 	response.setHeader('Content-Type', 'application/json; charset=utf-8');
 	pump(db.users.createKeyStream(), JSONStream.stringify(), response);
+});
+
+app.get('/modules/{name}.json', function(request, response) {
+	db.modules.get(request.params.name, function(err, module) {
+		if (err) return response.error(err);
+		response.send(module);
+	});
+});
+
+app.get('/search.json', function(request, response) {
+	var marker = request.query.marker;
+	var query = request.query.q || '';
+	var limit = parseInt(request.query.limit, 10) || DEFAULT_LIMIT;
+
+	request.user.search(query, {limit:limit, marker:marker}, function(err, modules) {
+		if (err) {
+			response.statusCode = 500;
+			response.send({error:err.message});
+			return;
+		}
+		response.send(modules);
+	})
 });
 
 app.get('/search.ansi', function(request, response) {
