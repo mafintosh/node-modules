@@ -11,6 +11,7 @@
 				<form action="/search">
 					<div class="oneline" style="margin-top:10px">
 						<input tabindex="1" type="text" name="q" id="q" placeholder="Enter a search query" value="<%= locals.query || '' %>" autofocus>
+						<input type="hidden" name="u" id="u" value="<% locals.username %>">
 						<input tabindex="3" type="submit" value="Search">
 					</div>
 					<% if (username) { %>
