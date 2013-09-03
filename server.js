@@ -3,13 +3,13 @@ var send = require('send');
 var pejs = require('pejs');
 var LRU = require('lru-cache');
 var cookie = require('cookie');
-var thunky = require('thunky');
 var fs = require('fs');
 var JSONStream = require('JSONStream');
 var pump = require('pump');
 var req = require('request');
 var qs = require('querystring');
 var ansi = require('./ansi');
+var registry = require('./registry');
 var users = require('./users');
 var db = require('./db');
 
@@ -23,10 +23,6 @@ var GITHUB_SECRET = process.env.GITHUB_SECRET;
 
 var app = root();
 var cache = LRU(5000);
-
-var modules = thunky(function(callback) {
-	db.meta.get('modules', callback);
-});
 
 var fingerprint = function(url) {
 	return REVISION ? 'http://dzdv0sfntaeum.cloudfront.net/'+REVISION+url : url;
@@ -80,7 +76,7 @@ app.all(function(request, response, next) {
 });
 
 app.get('/', function(request, response) {
-	modules(function(err, count) {
+	db.modules.meta.get('count', function(err, count) {
 		if (err) return response.error(err);
 		response.render('index.html', {modules:count});
 	});
@@ -91,7 +87,16 @@ app.get('/users.json', function(request, response) {
 	pump(db.users.createKeyStream(), JSONStream.stringify(), response);
 });
 
-app.get('/modules/{name}.json', function(request, response) {
+app.get('/registry/update', function(request, response) {
+	// TODO: progress reports, user updates
+	request.connection.setTimeout(30*60*1000);
+	registry.update(function(err, modules) {
+		if (err) return response.error(err);
+		response.send({modules:modules});
+	});
+});
+
+app.get('/registry/modules/{name}', function(request, response) {
 	db.modules.get(request.params.name, function(err, module) {
 		if (err) return response.error(err);
 		response.send(module);

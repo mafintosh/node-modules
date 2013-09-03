@@ -17,9 +17,6 @@ var SCORE_STARRED_DEPENDENT = 100;
 var SCORE_DEPENDENT = 2;
 var SCORE_STAR = 1;
 
-var GENERATION = 0;
-var FOLLOW_SELF = true;
-var MAX_STARS_NO_MAINTAINER = 100;
 var MAX_STARS_OUTDATED = 1000;
 var MAX_SCORE = 999999999;
 var MAX_SCORE_PAD = MAX_SCORE.toString(36).replace(/./, '0');
@@ -44,12 +41,12 @@ var moduleScore = function(mod, user) {
 	if (!gh) return total;
 
 	var stars = gh.stars;
-	if (!gh.maintainer) stars = Math.min(MAX_STARS_NO_MAINTAINER, gh.duplicated ? 0 : stars);
+	if (!gh.maintainer) stars = 0;
 	if (stars > MAX_STARS_OUTDATED && outdated(mod)) stars = MAX_STARS_OUTDATED;
 	total += stars * SCORE_STAR;
 
 	var following = function(other) {
-		return user.following[other] || (FOLLOW_SELF && other === user.username);
+		return user.following[other];
 	};
 
 	gh.dependents.forEach(function(dep) {
@@ -190,22 +187,46 @@ var indexStream = function(user) {
 	});
 };
 
-exports.update = function(user, callback) {
+var diff = function(stale, fresh) {
+	var changes = {};
+
+	var check = function(user) {
+		if (changes[user]) return;
+		if (fresh.following[user] === stale.following[user] && fresh.starred[user] === stale.starred[user]) return;
+		changes[user] = true;
+	};
+
+	Object.keys(fresh.following).forEach(check);
+	Object.keys(fresh.starred).forEach(check);
+	Object.keys(stale.following).forEach(check);
+	Object.keys(stale.starred).forEach(check);
+
+	return Object.keys(changes);
+};
+
+exports.update = function(user, opts, callback) {
+	if (typeof opts === 'function') return exports.update(user, null, opts);
 	if (!callback) callback = noop;
 	if (!user) user = exports.nobody;
+	if (!opts) opts = {};
+
+	if (!opts.updated && !opts.stale) return exports.add(user, callback);
+
+	var updated = opts.updated || new Date(0);
+	if (typeof updated !== 'string') updated = updated.toISOString();
 
 	pump(
-		db.updates.createKeyStream(),
+		db.modules.cached.createValueStream({start:updated}),
 		stream.transform(function(name, enc, callback) {
 			db.modules.get(name, callback);
 		}),
-		indexStream(user, true),
+		indexStream(user),
 		db.index.createWriteStream({valueEncoding:'utf-8'}),
 		callback
 	);
 };
 
-exports.add = function(user, callback) {
+exports.add = function(user, callback) { // TODO: profile to see if we can get away with just using update all the time
 	if (!callback) callback = noop;
 	if (!user) user = exports.nobody;
 
@@ -217,20 +238,20 @@ exports.add = function(user, callback) {
 	);
 };
 
-exports.search = function(user, query, opt, callback) {
-	if (typeof opt === 'function')  return exports.search(user, query, null, opt);
+exports.search = function(user, query, opts, callback) {
+	if (typeof opts === 'function')  return exports.search(user, query, null, opts);
 	if (!user) user = exports.nobody;
 
 	query = tokenize(query);
 
-	if (!opt) opt = {};
+	if (!opts) opts = {};
 	if (!query.length) query = ['@'];
 
 	var stream = query
 		.map(function(word) {
 			var prefix = encode(user.username, 'values', word);
 			return db.index.createReadStream({
-				start: prefix+(opt.marker ? '~'+opt.marker+'~' : '~'),
+				start: prefix+(opts.marker ? '~'+opts.marker+'~' : '~'),
 				end: prefix+'~~',
 				valueEncoding: 'utf-8'
 			});
@@ -240,7 +261,7 @@ exports.search = function(user, query, opt, callback) {
 		});
 
 	var result = [];
-	var limit = opt.limit || 20;
+	var limit = opts.limit || 20;
 
 	var onend = once(function(err) {
 		if (err) return callback(err);

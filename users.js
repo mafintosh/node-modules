@@ -1,4 +1,5 @@
 var thunky = require('thunky');
+var once = require('once');
 var index = require('./search-index');
 var getJSON = require('./getJSON');
 var db = require('./db');
@@ -12,6 +13,7 @@ var page = function(url, callback) {
 			if (err) return callback(err);
 			if (!list.length) return callback(null, result);
 			result = result.concat(list);
+			if (list.length < 30) return callback(null, result);
 			loop(i+1);
 		});
 	};
@@ -20,97 +22,104 @@ var page = function(url, callback) {
 };
 
 var fetch = function(username, callback) {
+	callback = once(callback);
+
+	var res = {};
+
+	res.username = username;
+	res.updated = new Date();
+
 	page('https://api.github.com/users/'+username+'/following', function(err, following) {
 		if (err) return callback(err);
-		page('https://api.github.com/users/'+username+'/starred', function(err, starred) {
-			if (err) return callback(err);
 
-			var res = {};
-
-			res.username = username;
-			res.following = {};
-			res.starred = {};
-			res.updated = new Date();
-			res.indexed = false;
-
-			following.forEach(function(user) {
-				res.following[user.login] = 1;
-			});
-
-			starred.forEach(function(repo) {
-				if (repo.owner.type !== 'User') return;
-				var username = repo.full_name.split('/')[0];
-				if (username === res.username) return;
-				res.starred[username] = (res.starred[username] || 0)+1;
-			});
-
-			callback(null, res);
+		res.following = {};
+		res.following[username] = 1;
+		following.forEach(function(user) {
+			res.following[user.login] = 1;
 		});
+
+		if (res.starred) return callback(null, res);
+	});
+	page('https://api.github.com/users/'+username+'/starred', function(err, starred) {
+		if (err) return callback(err);
+
+		res.starred = {};
+		starred.forEach(function(repo) {
+			if (repo.owner.type !== 'User') return;
+			var username = repo.full_name.split('/')[0];
+			if (username === res.username) return;
+			res.starred[username] = (res.starred[username] || 0)+1;
+		});
+
+		if (res.following) return callback(null, res);
 	});
 };
 
-var User = function(username, state) {
-	var self = this;
-
-	this.indexed = !!(state && state.indexed);
-	this.fetched = !!state;
-
-	this.json = thunky(function(callback) {
-		if (state) return callback(null, state);
-		fetch(username, function(err, user) {
-			if (err) return callback(err);
-			self.fetched = true;
-			db.users.put(username, user, function(err) {
-				if (err) return callback(err);
-				callback(null, user);
-			});
-		});
-	});
-
-	this.index = thunky(function(callback) {
-		if (self.indexed) return callback();
-		self.json(function(err, user) {
-			if (err) return callback(err);
-			index.add(user, function(err) {
-				if (err) return callback(err);
-				self.indexed = user.indexed = true;
-				db.users.put(username, user, callback);
-			});
-		});
-	});
+var User = function(username, json) {
+	this.username = username;
+	this.indexed = json && json.indexed && new Date(json.indexed);
+	this.json = json;
+	this.updating = null;
 };
 
 User.prototype.update = function(callback) {
 	if (!callback) callback = noop;
+	if (this.updating) return this.updating(callback);
 
-	this.json(function(err, user) {
-		if (err) return callback(err);
-		index.update(user, callback);
+	var self = this;
+	this.updating = thunky(function(callback) {
+		fetch(self.username, function(err, json) {
+			if (err) return callback(err);
+
+			var now = new Date();
+			var stale = self.json;
+			self.json = json;
+
+			index.update(json, {updated:self.indexed, stale:stale}, function(err) {
+				if (err) return callback(err);
+				self.indexed = json.indexed = now;
+				db.users.put(self.username, json, callback);
+			});
+		});
 	});
+
+	this.updating(function(err) {
+		self.updating = null;
+		callback(err);
+	});
+};
+
+User.prototype.ready = function(fn) {
+	if (!this.updating) return fn();
+	this.updating(fn);
 };
 
 User.prototype.search = function(query, opts, callback) {
 	if (typeof opts === 'function') return this.search(query, null, opts);
+	if (!callback) callback = noop;
 
 	var self = this;
-
-	this.index(function(err) {
+	if (!this.indexed) this.update();
+	this.ready(function(err) {
 		if (err) return callback(err);
-		self.json(function(err, user) {
-			if (err) return callback(err);
-			index.search(user, query, opts, callback);
-		});
+		index.search(self.json, query, opts, callback);
 	});
+};
+
+User.prototype.toJSON = function() {
+	return this.json;
 };
 
 User.prototype.destroy = function(callback) {
 	if (!callback) callback = noop;
 
-	this.json(function(err, user) {
+	var self = this;
+	this.ready(function(err) {
 		if (err) return callback(err);
-		index.remove(user, function(err) {
+		if (!self.json) return callback();
+		index.remove(self.json, function(err) {
 			if (err) return callback(err);
-			db.users.del(user.username, callback);
+			db.users.del(self.username, callback);
 		});
 	});
 };
