@@ -3,15 +3,18 @@ var sublevel = require('level-sublevel');
 
 var db = sublevel(level(__dirname+'/db', {valueEncoding:'json'}));
 
-var sub = function(db, name) {
-	db[name] = db.sublevel(name);
+var define = function(name) {
+	name.split('.').reduce(function(db, sub) {
+		return db[sub] = db.sublevel(sub);
+	}, db);
 };
 
-sub(db, 'index');
-sub(db, 'etags');
-sub(db, 'modules');
-sub(db, 'updates');
-sub(db, 'meta');
-sub(db, 'users');
+define('etags');
+define('index');
+define('users');
+
+define('modules');
+define('modules.cached');
+define('modules.meta');
 
 module.exports = db;
