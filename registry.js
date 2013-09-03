@@ -230,7 +230,7 @@ var update = function(opts, callback) {
 	                  // but since theres only ~40k modules we should be fine
 	var progress = new EventEmitter();
 
-	progress.updated = 0;
+	progress.count = 0;
 	progress.on('end', callback);
 	progress.on('error', callback);
 
@@ -299,7 +299,8 @@ var update = function(opts, callback) {
 
 				push('put', mod.meta.prefix('updated'), latest.fresh.updated);
 
-				progress.updated++;
+				progress.updated = latest.fresh.updated;
+				progress.count++;
 				progress.emit('update', latest.fresh);
 
 				callback();
