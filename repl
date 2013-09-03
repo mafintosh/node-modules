@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+
+var repl = require('repl');
+var deleteRange = require('level-delete-range');
+
+var context = repl.start('> ').context;
+
+context.db = require('./db');
+context.rm = function(db, opt) {
+	deleteRange(db, opt || {});
+};
+context.clear = function() {
+	var db = context.db;
+	deleteRange(db.modules, {});
+	deleteRange(db.modules.meta, {});
+	deleteRange(db.modules.cached, {});
+};
+
+context.users = require('./users');
+
+context.registry = require('./registry');
