@@ -90,9 +90,9 @@ app.get('/users.json', function(request, response) {
 app.get('/registry/update', function(request, response) {
 	// TODO: progress reports, user updates
 	request.connection.setTimeout(30*60*1000);
-	registry.update(function(err, modules) {
+	registry.update(function(err, stats) {
 		if (err) return response.error(err);
-		response.send({modules:modules});
+		response.send(stats);
 	});
 });
 

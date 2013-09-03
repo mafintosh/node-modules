@@ -230,9 +230,13 @@ var update = function(opts, callback) {
 	                  // but since theres only ~40k modules we should be fine
 	var progress = new EventEmitter();
 
-	progress.count = 0;
-	progress.on('end', callback);
+	progress.updates = 0;
+	progress.total = 0;
+
 	progress.on('error', callback);
+	progress.on('end', function() {
+		callback(null, {updated:progress.updated, updates:progress.updates, total:progress.total});
+	});
 
 	var onupdate = function(name, callback) {
 		if (updated[name]) return callback();
@@ -247,6 +251,9 @@ var update = function(opts, callback) {
 	};
 
 	var onlastupdate = function(date) {
+		progress.updated = date;
+		progress.total = total;
+
 		pump(
 			request('http://registry.npmjs.org/-/_view/browseUpdated?group_level=2&startkey='+encJSON([date])),
 			JSONStream.parse('rows.*'),
@@ -300,7 +307,8 @@ var update = function(opts, callback) {
 				push('put', mod.meta.prefix('updated'), latest.fresh.updated);
 
 				progress.updated = latest.fresh.updated;
-				progress.count++;
+				progress.updates++;
+				progress.total = total;
 				progress.emit('update', latest.fresh);
 
 				callback();
