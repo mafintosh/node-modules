@@ -1,8 +1,0 @@
-#!/usr/bin/env node
-
-var db = require('../db');
-var rm = require('level-delete-range');
-
-rm(db.modules, {});
-rm(db.fetches, {});
-rm(db.meta, {});

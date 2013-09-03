@@ -45,6 +45,6 @@ db.modules.createValueStream()
 			compounds[word] = split;
 		});
 
-		fs.writeFileSync(__dirname+'/../tokenize/compounds.json', JSON.stringify(compounds, null, '\t'));
+		fs.writeFileSync(__dirname+'/compounds.json', JSON.stringify(compounds, null, '\t'));
 		console.log('updated compounds.json');
 	});
