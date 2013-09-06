@@ -130,7 +130,7 @@ app.get('/search.ansi', function(request, response) {
 });
 
 app.get('/search', function(request, response) { // no limit option as we autoscroll
-	var query = request.query.q || '';
+	var query = '' + [request.query.q];
 	var view = request.query.partial ? 'partials/modules.html' : 'search.html';
 	var force = request.query.force || request.query.partial;
 	var marker = request.query.marker;
