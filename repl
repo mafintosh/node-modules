@@ -2,13 +2,16 @@
 
 var repl = require('repl');
 var deleteRange = require('level-delete-range');
+var registry = require('./registry')
 
 var context = repl.start('> ').context;
 
 context.db = require('./db');
+
 context.rm = function(db, opt) {
 	deleteRange(db, opt || {});
 };
+
 context.clear = function() {
 	var db = context.db;
 	deleteRange(db.modules, {});
@@ -16,6 +19,21 @@ context.clear = function() {
 	deleteRange(db.modules.cached, {});
 };
 
+context.clearUsers = function() {
+	var db = context.db;
+	deleteRange(db.users, {});
+};
+
+context.update = function() {
+	var prog = registry.update();
+	prog.on('update', function(module) {
+		console.log('updated', module.name);
+	});
+	prog.on('end', function() {
+		console.log('update complete');
+	});
+};
+
 context.users = require('./users');
 
-context.registry = require('./registry');
+context.registry = registry;
