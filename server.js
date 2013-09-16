@@ -162,4 +162,6 @@ app.error(function(request, response, opt) {
 	});
 });
 
-app.listen(10000);
+app.listen(param('port'), function() {
+	console.log('app running on http://'+param('host'));
+});

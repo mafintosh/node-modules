@@ -5,5 +5,6 @@ module.exports = {
 		secret: process.env.GITHUB_SECRET
 	},
 	mongo: 'node-modules',
+	port: 10000,
 	host: 'development.node-modules.com:10000'
 };

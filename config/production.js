@@ -1,5 +1,4 @@
 var fs = require('fs');
-
 var REVISION_HEAD = __dirname+'/../.git/refs/heads/master';
 
 module.exports = {
@@ -9,5 +8,6 @@ module.exports = {
 		secret: process.env.GITHUB_SECRET
 	},
 	mongo: process.env.MONGO_AUTH+'@ds045628.mongolab.com:45628/node-modules',
+	port: 80,
 	host: 'node-modules.com'
 };
