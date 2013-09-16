@@ -6,5 +6,5 @@ module.exports = {
 	},
 	mongo: 'node-modules',
 	port: 10000,
-	host: 'development.node-modules.com:10000'
+	host: 'development.node-modules.com:{port}'
 };
