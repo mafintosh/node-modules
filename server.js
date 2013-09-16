@@ -8,6 +8,7 @@ var LRU = require('lru-cache');
 var req = require('request');
 var qs = require('querystring');
 var modules = require('./modules');
+var mongo = require('./mongo');
 var user = require('./user');
 
 var COOKIE_MAX_AGE = 31 * 24 * 3600 * 1000; // 1 month
@@ -16,7 +17,7 @@ var FINGERPRINT = param('fingerprint');
 
 var app = root();
 
-var cache = LRU(30000);
+var cache = LRU(5000);
 var anon = user();
 
 var string = function(str) {
@@ -86,6 +87,13 @@ app.get('/.json', function(request, response) {
 
 app.get('/public/*', function(request, response) {
 	send(request, __dirname+'/public/'+request.params.glob).pipe(response);
+});
+
+app.get('/update', function(request, response) {
+	modules.update(function(err, stats) {
+		if (err) return response.error(err);
+		response.send(stats);
+	});
 });
 
 app.get('/{version}/public/*', function(request, response) {
