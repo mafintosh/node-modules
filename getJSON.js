@@ -1,13 +1,20 @@
 var request = require('request');
-var db = require('./db');
+var ForeverAgent = require('forever-agent');
+var level = require('./level');
 
 var GITHUB_USER = {client_id:'5859679ea29a64c21b0d', client_secret:'fe128ece9aef6119b40825211041eaca43842da9'};
 var GITHUB_URL = /^https:\/\/api.github.com/;
+var AGENT_SSL = new ForeverAgent.SSL();
+
+var githubRequest = request.defaults({
+	qs: GITHUB_USER,
+	agent: AGENT_SSL
+});
 
 module.exports = function(url, opts, callback) {
 	if (typeof opts === 'function') return module.exports(url, {}, opts);
 
-	db.etags.get(url, function(_, data) {
+	level.etags.get(url, function(_, data) {
 		if (opts.force) data = null;
 
 		if (data && opts.optimistic) { // status requests probably never change...
@@ -20,9 +27,8 @@ module.exports = function(url, opts, callback) {
 			return callback(null, data.body);
 		}
 
-		request(url, {
+		(GITHUB_URL.test(url) ? githubRequest : request)(url, {
 			json:true,
-			qs: GITHUB_URL.test(url) && GITHUB_USER,
 			headers: {
 				'user-agent': 'node-search',
 				'if-none-match': data && data.etag
@@ -43,7 +49,7 @@ module.exports = function(url, opts, callback) {
 			data.etag = response.headers.etag;
 			data.updated = Date.now();
 
-			db.etags.put(url, data, function() {
+			level.etags.put(url, data, function() {
 				if (body === null) return callback(new Error('bad request'));
 				return callback(null, body);
 			});
