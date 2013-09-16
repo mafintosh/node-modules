@@ -1,24 +1,3 @@
-
-<% if (!modules.length && locals.warning !== false) { %>
-	<div class="warn block">
-		<h2>No modules were found</h2>
-		<span>Try searching for something less specific, e.g. <a href="/search?q=web+framework">web framework</a> or <a href="/search?q=database">database</a></span>
-	</div>
-<% } %>
-<% if (modules.length && locals.warning !== false) { %>
-	<div class="personalize block">
-		<% if (username) { %>
-			<span>Results are personalized to <a href="http://github.com/<%= username %>"><%= username %></a> using <span class="bold">stars</span> and <span class="bold">follows</span> on Github.</span>
-		<% } else { %>
-			<%
-				var redirectUrl = 'http://node-modules.com/authorize?q='+query;
-				var githubUrl = 'https://github.com/login/oauth/authorize?client_id='+githubClientId;
-				githubUrl += '&redirect_uri=' + encodeURIComponent(redirectUrl);
-			%>
-			<span>For better results using your <span class="bold">project stars</span> and <span class="bold">follows</span> on Github, <a href="<%= githubUrl %>">personalize your account</a>.
-		<% } %>
-	</div>
-<% } %>
 <% modules.forEach(function(mod) { %>
 	<div class="module" data-marker="<%= mod.marker %>" data-score="<%= mod.score %>">
 		<% if (mod.stars) { %>

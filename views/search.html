@@ -20,30 +20,30 @@
 				</form>
 			</div>
 		</div>
+		<div id="search" class="main offset">
+			<% if (!modules.length) { %>
+				<div class="warn block">
+					<h2>No modules were found</h2>
+					<span>Try searching for something less specific, e.g. <a href="/search?q=web+framework">web framework</a> or <a href="/search?q=database">database</a></span>
+				</div>
+			<% } else { %>
+				<div class="personalize block">
+					<% if (username) { %>
+						<span>
+							Results are personalized to
+							<a href="http://github.com/<%= username %>"><%= username %></a>
+							using <span class="bold">stars</span> and <span class="bold">follows</span> on Github.
+						</span>
+					<% } else { %>
+						<span>
+							For better results using your <span class="bold">project stars</span> and <span class="bold">follows</span> on Github,
+							<a href="/personalize?q=<%= encodeURIComponent(query) %>">personalize your account</a>
+						</span>.
+					<% } %>
+				</div>
+			<% } %>
+			<%{ 'partials/modules.html'	 }%>
+		</div>
 		<script src="<%- fingerprint('/public/search.js') %>"></script>
-		<% if (locals.modules) { %>
-			<div id="search" class="main offset">
-				<%{ 'partials/modules.html'	 }%>
-			</div>
-		<% } else { %>
-			<div class="main offset">
-				<div class="warn block" id="index-progress">
-					<h2>Personalizing results for <%= username || 'registry' %></span><span id="progress"></span></h2>
-					<span>Please wait while your personal search index is being generated.<br>This can take up to two minutes. Will only happen the first time you use this.</span>
-				</div>
-				<div class="warn block hidden" id="index-complete">
-					<h2>Succesfully personalized results for <%= username || 'registry' %></span></h2>
-					<span>Personalizing took <b><span id="time">21.4</span> seconds</b></span>
-				</div>
-				<div class="error block hidden" id="index-error">
-					<h2>Coult not personalize results for <%= username || 'registry' %> <span id="status-text">!</span></h2>
-					<span>Are you sure the Github username is correct? Result below uses general ranking</span>
-				</div>
-			</div>
-			<div id="search" class="main"></div>
-			<script>
-				window.onindexing();
-			</script>
-		<% } %>
 	</body>
 </html>
