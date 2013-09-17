@@ -7,18 +7,22 @@ var fs = require('fs');
 var LRU = require('lru-cache');
 var req = require('request');
 var qs = require('querystring');
+var stream = require('stream-wrapper');
+var JSONStream = require('JSONStream');
 var modules = require('./modules');
 var mongo = require('./mongo');
 var user = require('./user');
 
 var COOKIE_MAX_AGE = 31 * 24 * 3600 * 1000; // 1 month
 var FINGERPRINT_MAX_AGE = 365 * 24 * 3600;
-var FINGERPRINT = param('fingerprint');
+var FINGERPRINT = param('fingerprint') && param('fingerprint').toString('hex');
 
 var app = root();
 
 var cache = LRU(5000);
 var anon = user();
+
+stream = stream.defaults({objectMode:true});
 
 var string = function(str) {
 	return str ? str+'' : '';
@@ -90,10 +94,17 @@ app.get('/public/*', function(request, response) {
 });
 
 app.get('/update', function(request, response) {
-	modules.update(function(err, stats) {
-		if (err) return response.error(err);
-		response.send(stats);
+	var updates = modules.update();
+	var prev = false;
+
+	response.write('[\n');
+	updates.on('module', function(mod) {
+		response.write(prev ? ', ' : '  '+JSON.stringify(mod)+'\n');
+		prev = true;
 	});
+	updates.on('end', function() {
+		response.end(']');
+	})
 });
 
 app.get('/{version}/public/*', function(request, response) {

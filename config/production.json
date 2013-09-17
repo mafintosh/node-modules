@@ -1,0 +1,10 @@
+{
+	"fingerprint": "{../.git/refs/heads/master}",
+	"github": {
+		"client": "6eda13aad78e1b1c4f5f",
+		"secret": "{$GITHUB_SECRET}"
+	},
+	"mongo": "{$MONGO_AUTH}@ds045628.mongolab.com:45628/node-modules",
+	"port": 80,
+	"host": "node-modules.com"
+}
