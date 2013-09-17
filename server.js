@@ -68,6 +68,24 @@ app.on('route', function(request, response) {
 	response.setHeader('Set-Cookie', cookie.serialize('username', username, {maxAge:COOKIE_MAX_AGE}));
 });
 
+app.get('/update/modules.json', function(request, response) {
+	var updates = modules.update();
+	var output = JSONStream.stringify();
+
+	output.pipe(response);
+
+	updates.on('module', function(mod) {
+		output.write(mod);
+	});
+	updates.on('end', function() {
+		output.end();
+	});
+});
+
+app.get('/update/users.json', function(request, response) {
+	response.send([]);
+});
+
 app.get('/package/{name}.json', function(request, response) {
 	modules.get(request.params.name, function(err, module) {
 		if (err) return response.error(err);
@@ -91,20 +109,6 @@ app.get('/.json', function(request, response) {
 
 app.get('/public/*', function(request, response) {
 	send(request, __dirname+'/public/'+request.params.glob).pipe(response);
-});
-
-app.get('/update', function(request, response) {
-	var updates = modules.update();
-	var prev = false;
-
-	response.write('[\n');
-	updates.on('module', function(mod) {
-		response.write(prev ? ', ' : '  '+JSON.stringify(mod)+'\n');
-		prev = true;
-	});
-	updates.on('end', function() {
-		response.end(']');
-	})
 });
 
 app.get('/{version}/public/*', function(request, response) {

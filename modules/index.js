@@ -69,7 +69,6 @@ exports.update = function(opts, callback) {
 
 	progress.count = 0;
 	progress.on('end', callback);
-	progress.on('error', callback);
 
 	opts.maxAge = opts.maxAge || 3600 * 1000;
 	opts.optimistic = opts.optimistic !== false;
@@ -133,8 +132,7 @@ exports.update = function(opts, callback) {
 			}),
 			function(err) {
 				ended = true;
-				if (err) return progress.emit('error', err);
-				progress.emit('end');
+				progress.emit('end', err);
 			}
 		);
 	};
