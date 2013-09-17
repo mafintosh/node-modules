@@ -136,6 +136,8 @@ app.get('/authorize', function(request, response) {
 });
 
 app.get('/personalize', function(request, response) {
+	if (!param('github.secret')) return response.error(new Error('github secret is not configured'));
+
 	var q = encodeURIComponent(string(request.query.q));
 	var url = 'https://github.com/login/oauth/authorize?'+qs.stringify({
 		client_id: param('github.client'),
