@@ -134,7 +134,8 @@ exports.contains = function(user, callback) {
 	if (typeof user === 'function') return exports.contains(null, user);
 	if (!user) user = exports.nobody;
 
-	level.index.users.get(user._id, function(err) {
+	// don't spend time JSON parsing since we only want an existence check
+	level.index.users.get(user._id, {valueEncoding:'binary'}, function(err) {
 		callback(null, !err);
 	});
 };
@@ -176,15 +177,25 @@ var updateUser = function(user, callback) {
 		return {$or:ors};
 	};
 
+	var updates = 0;
+	var counter = stream.transform(function(data, enc, callback) {
+		updates++;
+		callback(null, data);
+	});
+
 	level.index.users.get(user._id, function(err, old) {
 		pump(
 			modules.createReadStream(generateQuery(old)),
+			counter,
 			indexStream(user),
 			level.index.createWriteStream({valueEncoding:'utf-8'}),
 			function(err) {
 				if (err) return callback(err);
 				user.cached = new Date();
-				level.index.users.put(user._id, user, callback);
+				level.index.users.put(user._id, user, function(err) {
+					if (err) return callback(err);
+					callback(null, updates);
+				});
 			}
 		);
 	});
@@ -297,26 +308,3 @@ exports.search = function(user, query, opts, callback) {
 
 	take(results, limit, callback);
 };
-
-// require('../users')('mafintosh', function(err, user) {
-// 	var t = Date.now();
-// 	// exports.remove(user, function() {
-// 	// 	console.log('removed', user._id);
-// 	// });
-// 	// return;
-
-// 	var t = Date.now();
-// 	exports.update(user, function() {
-// 		console.log('updated', user._id, Date.now() - t);
-// 	});
-// 	return;
-
-// 	// exports.remove(user, function() {
-// 	// 	console.log('removed');
-// 	// });
-// 	// return;
-// 	exports.search(user, 'test framework', {marker:'gjddzr-mocha'}, function(err, list) {
-// 		console.log(Date.now() - t);
-// 		console.log(list);
-// 	});
-// });

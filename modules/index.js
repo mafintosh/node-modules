@@ -1,6 +1,5 @@
 var request = require('request');
 var pump = require('pump');
-var parallel = require('parallel-transform');
 var thunky = require('thunky');
 var JSONStream = require('JSONStream');
 var EventEmitter = require('events').EventEmitter;
@@ -55,7 +54,7 @@ exports.info = function(callback) {
 	});
 };
 
-exports.createReadStream = function() {
+exports.createReadStream = function() { // TODO: maybe populate the cache with this stream?
 	return mongo.modules.find.apply(mongo.modules, arguments);
 };
 
@@ -67,7 +66,6 @@ exports.update = function(opts, callback) {
 	var progress = new EventEmitter();
 	var ended = false;
 
-	progress.count = 0;
 	progress.on('end', callback);
 
 	opts.maxAge = opts.maxAge || 3600 * 1000;
@@ -89,13 +87,13 @@ exports.update = function(opts, callback) {
 					module.github = module.github || {};
 					module.github.dependents = Object.keys(uniq);
 					cache.del(module._id);
-					mongo.modules.save(module, function(err) {
+					mongo.modules.findOne({_id:module._id}, function(err, stale) {
 						if (err) return callback(err);
-						if (!ended) {
-							progress.count++;
-							progress.emit('module', module);
-						}
-						callback();
+						mongo.modules.save(module, function(err) {
+							if (err) return callback(err);
+							if (!ended) progress.emit('module', module);
+							callback(null, module, stale);
+						});
 					});
 					return;
 				}
@@ -118,13 +116,42 @@ exports.update = function(opts, callback) {
 		});
 	});
 
+	var ensureDependencies = function(fresh, stale, callback) {
+		// if deps has changed we need to ensure them as their dependents have changed as well
+		var diff = {};
+
+		fresh.dependencies.forEach(function(dep) {
+			diff[dep] = 1;
+		});
+		stale.dependencies.forEach(function(dep) {
+			if (diff[dep] === 1) delete diff[dep];
+			else diff[dep] = -1;
+		});
+
+		diff = Object.keys(diff);
+
+		var i = 0;
+		var loop = function(err) {
+			if (err) return callback(err);
+			if (i === diff.length) return callback();
+			ensureModule(diff[i++], loop);
+		};
+
+		loop();
+	};
+
 	var onlastupdated = function(date) {
 		pump(
 			request('http://registry.npmjs.org/-/_view/browseUpdated?group_level=2&startkey='+encJSON([date])),
 			JSONStream.parse('rows.*'),
-			parallel(10, function(row, callback) {
-				ensureModule(row.key[1], function(err) {
-					callback(err, row.key[0]);
+			stream.transform(function(row, enc, callback) {
+				ensureModule(row.key[1], function(err, fresh, stale) {
+					if (err) return callback(err);
+					if (!stale || !fresh) return callback(null, row.key[0]);
+
+					ensureDependencies(fresh, stale, function() {
+						callback(err, row.key[0]);
+					});
 				});
 			}),
 			stream.writable(function(updated, enc, callback) {
@@ -139,29 +166,12 @@ exports.update = function(opts, callback) {
 
 	if (opts.updated) {
 		onlastupdated(opts.updated);
-		return progress;
+	} else {
+		mongo.meta.findOne({_id:'modules'}, function(err, doc) {
+			if (err) return progress.emit('error', err);
+			onlastupdated(doc.updated);
+		});
 	}
-
-	mongo.meta.findOne({_id:'modules'}, function(err, doc) {
-		if (err) return progress.emit('error', err);
-		onlastupdated(doc.updated);
-	});
 
 	return progress;
 };
-
-if (require.main !== module) return;
-
-var progress = exports.update();
-var log = require('single-line-log');
-
-progress.on('module', function(module) {
-	log(progress.count, module._id);
-});
-
-progress.on('end', function() {
-	log('ended');
-	mongo.close();
-});
-
-progress.on('error', console.log);
