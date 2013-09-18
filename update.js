@@ -31,3 +31,18 @@ var update = function() {
 };
 
 module.exports = update;
+
+if (require.main !== module) return;
+
+var log = require('single-line-log');
+
+update()
+	.on('module', function(mod) {
+		log('updating module '+mod._id+' (v'+mod.version+')');
+	})
+	.on('user', function(user) {
+		log('updating user '+user._id+' ('+user.updates+' updates)');
+	})
+	.on('end', function() {
+		process.exit(0);
+	})
