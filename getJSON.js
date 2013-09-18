@@ -4,12 +4,23 @@ var level = require('./level');
 
 var GITHUB_USER = {client_id:'5859679ea29a64c21b0d', client_secret:'fe128ece9aef6119b40825211041eaca43842da9'};
 var GITHUB_URL = /^https:\/\/api.github.com/;
+var HTTP_URL = /^http:/;
 var AGENT_SSL = new ForeverAgent.SSL();
 
 var githubRequest = request.defaults({
 	qs: GITHUB_USER,
 	agent: AGENT_SSL
 });
+
+var httpRequest = request.defaults({
+	agent: new ForeverAgent()
+});
+
+var matchRequest = function(url) {
+	if (GITHUB_URL.test(url)) return githubRequest;
+	if (HTTP_URL.test(url)) return httpRequest;
+	return request;
+};
 
 module.exports = function(url, opts, callback) {
 	if (typeof opts === 'function') return module.exports(url, {}, opts);
@@ -27,7 +38,7 @@ module.exports = function(url, opts, callback) {
 			return callback(null, data.body);
 		}
 
-		(GITHUB_URL.test(url) ? githubRequest : request)(url, {
+		matchRequest(url)(url, {
 			json:true,
 			headers: {
 				'user-agent': 'node-search',
