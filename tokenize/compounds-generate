@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
-var db = require('../db');
+var mongo = require('../mongo');
 var fs = require('fs');
 
 var words = {};
 var relations = {};
 var TOKEN = /^[a-zA-Z0-9@]+$/;
 
-db.modules.createValueStream()
+mongo.modules.find()
 	.on('data', function(data) {
 		var keywords = data.keywords;
 
