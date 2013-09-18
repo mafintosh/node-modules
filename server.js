@@ -4,25 +4,18 @@ var send = require('send');
 var cookie = require('cookie');
 var param = require('param');
 var fs = require('fs');
-var LRU = require('lru-cache');
 var req = require('request');
 var qs = require('querystring');
-var stream = require('stream-wrapper');
 var JSONStream = require('JSONStream');
 var modules = require('./modules');
-var mongo = require('./mongo');
-var user = require('./user');
+var users = require('./users');
+var update = require('./update');
 
 var COOKIE_MAX_AGE = 31 * 24 * 3600 * 1000; // 1 month
 var FINGERPRINT_MAX_AGE = 365 * 24 * 3600;
 var FINGERPRINT = param('fingerprint') && param('fingerprint').toString('hex');
 
 var app = root();
-
-var cache = LRU(5000);
-var anon = user();
-
-stream = stream.defaults({objectMode:true});
 
 var string = function(str) {
 	return str ? str+'' : '';
@@ -37,7 +30,7 @@ app.use('response.render', function(filename, locals) {
 	var response = this;
 
 	locals = locals || {};
-	locals.anon = this.request.user === anon;
+	locals.anon = !this.request.username;
 	locals.username = locals.anon ? '' : this.request.username;
 	locals.fingerprint = fingerprint;
 	locals.query = string(this.request.query.q);
@@ -53,7 +46,7 @@ app.use('request.search', function(callback) {
 	var marker = string(this.query.marker);
 	var limit = Math.min(parseInt(this.query.limit, 10) || 20, 50);
 
-	this.user.search(query, {marker:marker, limit:limit}, callback);
+	users.search(this.username, query, {marker:marker, limit:limit}, callback);
 });
 
 app.on('route', function(request, response) {
@@ -62,34 +55,38 @@ app.on('route', function(request, response) {
 	if (request.query.u === '') username = '';
 
 	request.username = username = username.toLowerCase();
-	request.user = !username ? anon : cache.get(username);
-	if (!request.user) cache.set(username, request.user = user(username));
-
 	response.setHeader('Set-Cookie', cookie.serialize('username', username, {maxAge:COOKIE_MAX_AGE}));
-});
-
-app.get('/update/modules.json', function(request, response) {
-	var updates = modules.update();
-	var output = JSONStream.stringify();
-
-	output.pipe(response);
-
-	updates.on('module', function(mod) {
-		output.write(mod);
-	});
-	updates.on('end', function() {
-		output.end();
-	});
-});
-
-app.get('/update/users.json', function(request, response) {
-	response.send([]);
 });
 
 app.get('/package/{name}.json', function(request, response) {
 	modules.get(request.params.name, function(err, module) {
 		if (err) return response.error(err);
 		response.send(module);
+	});
+});
+
+app.get('/update.json', function(request, response) {
+	var progress = update();
+	var output = JSONStream.stringify();
+
+	response.setHeader('Content-Type', 'application/json; charset=utf-8');
+	output.pipe(response);
+
+	progress.on('module', function(module) {
+		output.write({type:'module', id:module._id, version:module.version, updated:module.updated});
+	});
+	progress.on('user', function(user) {
+		output.write({type:'user', id:user._id, updates:user.updates});
+	});
+	progress.on('end', function() {
+		output.end();
+	});
+});
+
+app.get('/me.json', function(request, response) {
+	users.get(request.username, function(err, user) {
+		if (err) return response.error(err);
+		response.send(user);
 	});
 });
 
