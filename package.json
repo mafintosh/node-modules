@@ -5,7 +5,6 @@
   "dependencies": {
     "sorted-intersect-stream": "~0.2.5",
     "sorted-union-stream": "~0.2.3",
-    "parallel-transform": "~0.2.0",
     "stream-wrapper": "~0.1.1",
     "mongojs": "~0.9.4",
     "pump": "~0.1.2",
