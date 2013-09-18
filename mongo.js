@@ -1,4 +1,5 @@
 var mongojs = require('mongojs');
-var db = mongojs('node-modules', ['modules', 'meta', 'users']);
+var param = require('param');
+var db = mongojs(param('mongo'), ['modules', 'meta', 'users']);
 
 module.exports = db;
