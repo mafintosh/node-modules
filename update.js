@@ -3,7 +3,8 @@ var users = require('./users');
 var modules = require('./modules');
 
 var updating;
-var update = function() {
+var update = function(callback) {
+	if (callback) return update().on('end', callback);
 	if (updating) return updating;
 
 	updating = new EventEmitter();

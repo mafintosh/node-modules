@@ -186,5 +186,10 @@ app.error(function(request, response, opt) {
 
 app.listen(param('port'), function() {
 	console.log('app running on http://'+param('host'));
-	setInterval(update, 3600*1000); // update every hour
+
+	var loop = function() {
+		setTimeout(update.bind(null, loop), 3600*1000);
+	};
+
+	loop() // update every hour
 });
