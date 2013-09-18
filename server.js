@@ -100,6 +100,7 @@ app.get('/search.json', function(request, response) {
 app.get('/.json', function(request, response) {
 	modules.info(function(err, info) {
 		if (err) return response.error(err);
+		info.now = new Date();
 		response.send(info);
 	});
 });
