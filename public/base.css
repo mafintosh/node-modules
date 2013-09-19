@@ -84,7 +84,7 @@ input[type="submit"] {
 	margin: auto;
 	margin-top: 20%;
 	padding-top: 175px;
-	background-image: url('/public/logo/logo4b.png');
+	background-image: url('logo/logo4b.png');
 	background-repeat: no-repeat;
 }
 
@@ -200,7 +200,7 @@ input[type="submit"] {
 	font-weight: bold;
 	padding: 4px 10px;
 	padding-left: 18px;
-	background-image: url('/public/black-star.png');
+	background-image: url('black-star.png');
 	background-repeat: no-repeat;
 	background-position: 0 50%;
 }
