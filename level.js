@@ -1,7 +1,7 @@
 var level = require('level');
 var sublevel = require('level-sublevel');
 
-var db = sublevel(level(__dirname+'/db', {valueEncoding:'json'}));
+var db = sublevel(level(__dirname+'/db', {valueEncoding:'json', highWaterMark:16}));
 
 var define = function(name) {
 	name.split('.').reduce(function(db, sub) {

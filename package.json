@@ -12,8 +12,7 @@
     "pejs": "~0.5.4",
     "root": "~0.5.14",
     "request": "~2.26.0",
-    "level": "~0.12.0",
-    "level-sublevel": "~4.8.3",
+    "level": "~0.16.0",
     "level-delete-range": "~0.1.0",
     "lru-cache": "~2.3.0",
     "JSONStream": "~0.6.4",
@@ -22,7 +21,8 @@
     "thunky": "~0.1.0",
     "forever-agent": "~0.5.0",
     "param": "~0.3.1",
-    "single-line-log": "~0.1.0"
+    "single-line-log": "~0.1.0",
+    "level-sublevel": "~5.1.1"
   },
   "main": "server.js"
 }
