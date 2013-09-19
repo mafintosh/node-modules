@@ -50,6 +50,8 @@ app.use('request.search', function(callback) {
 });
 
 app.on('route', function(request, response) {
+	if (request.headers.host === 'blog.node-modules.com') return response.redirect('http://reddit.com/r/node_modules');
+
 	var c = cookie.parse(request.headers.cookie || '');
 	var username = request.query.u || c.username || '';
 	if (request.query.u === '') username = '';
