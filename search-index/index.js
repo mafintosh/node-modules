@@ -56,15 +56,15 @@ var unpack = function(mod, packed) {
 	var gh = mod.github;
 	return {
 		name: mod._id,
-		author: (gh && gh.username) || mod.maintainer,
+		author: gh && gh.username || mod.maintainer,
 		profile: (gh && gh.username) ? 'https://github.com/'+gh.username : 'https://npmjs.org/~'+mod.maintainer,
 		related: packed[2],
 		relation: packed[3],
 		score: packed[1],
-		stars: gh ? gh.stars : 0,
+		stars: gh && gh.stars || 0,
 		dependents: mod.dependents.length,
 		description: mod.description,
-		url: gh ? gh.url : 'https://npmjs.org/package/'+mod._id,
+		url: gh && gh.url || 'https://npmjs.org/package/'+mod._id,
 		marker: marker(mod._id, packed[1])
 	};
 };
