@@ -13,7 +13,7 @@ var update = require('./update');
 
 var COOKIE_MAX_AGE = 31 * 24 * 3600 * 1000; // 1 month
 var FINGERPRINT_MAX_AGE = 365 * 24 * 3600;
-var FINGERPRINT = param('fingerprint') && param('fingerprint').toString('hex');
+var FINGERPRINT = param('fingerprint') && param('fingerprint').toString().trim();
 
 var app = root();
 
