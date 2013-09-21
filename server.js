@@ -165,6 +165,8 @@ app.get('/search', function(request, response) {
 	});
 });
 
+app.get('/favicon.ico', '/public/favicon.ico');
+
 app.get('/', function(request, response) {
 	modules.info(function(err, info) {
 		response.render('index.html', info);
