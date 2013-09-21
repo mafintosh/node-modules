@@ -7,6 +7,7 @@ var fs = require('fs');
 var req = require('request');
 var qs = require('querystring');
 var JSONStream = require('JSONStream');
+var pump = require('pump');
 var modules = require('./modules');
 var users = require('./users');
 var update = require('./update');
@@ -65,6 +66,12 @@ app.get('/package/{name}.json', function(request, response) {
 		if (err) return response.error(err);
 		response.send(module);
 	});
+});
+
+app.get('/modules.json', function(request, response) {
+	var cached = new Date(string(request.query.cached) || '1970-01-01');
+	var query = {cached:{$gte:cached}};
+	pump(modules.createReadStream(query), JSONStream.stringify(), response);
 });
 
 app.get('/update.json', function(request, response) {
