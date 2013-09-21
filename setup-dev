@@ -18,7 +18,7 @@ var inc = 0;
 console.log('== setting up dev environment ==\n');
 
 mongo.open(function(err) {
-	if (err) return error('could not connect to mongodb - are you sure it is installed?');
+	if (err) return error('could not connect to mongodb - are you sure it is installed and running?');
 
 	var fetch = function() {
 		console.log('fetching module updates from http://node-modules.com');
