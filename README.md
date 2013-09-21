@@ -18,6 +18,8 @@ Run `npm run setup-dev` again to get the newest updates.
 ## Starting the server
 
 	node . # starts a server on port 10000
+	
+If you need to start it on a different port pass `--port [port]`
 
 ## License
 
