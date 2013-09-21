@@ -1,8 +1,9 @@
 var request = require('request');
 var ForeverAgent = require('forever-agent');
+var param = require('param');
 var level = require('./level');
 
-var GITHUB_USER = {client_id:'5859679ea29a64c21b0d', client_secret:'fe128ece9aef6119b40825211041eaca43842da9'};
+var GITHUB_USER = {client_id:param('github.client'), client_secret:param('github.secret')};
 var GITHUB_URL = /^https:\/\/api.github.com/;
 var HTTP_URL = /^http:/;
 var AGENT_SSL = new ForeverAgent.SSL();
