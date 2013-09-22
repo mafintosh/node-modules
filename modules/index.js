@@ -48,7 +48,7 @@ exports.info = function(callback) {
 			if (err) return callback(err);
 			callback(null, {
 				modules: count,
-				updated: meta.updated
+				updated: meta && meta.updated || new Date(0)
 			});
 		});
 	});
