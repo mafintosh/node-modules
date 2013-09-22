@@ -23,32 +23,39 @@ mongo.open(function(err) {
 	var fetch = function() {
 		console.log('fetching module updates from http://node-modules.com');
 
-		mongo.modules.find({}).sort({cached:-1}).limit(1).next(function(err, newest) {
-			var cached = newest ? newest.cached : new Date(0);
+		mongo.meta.findOne({_id:'modules'}, function(err, meta) {
+			var updated = meta && meta.updated || new Date(0);
 
-			pump(
-				request('http://node-modules.com/modules.json', {
-					qs: {
-						cached: cached.toISOString()
+			mongo.modules.find({}).sort({cached:-1}).limit(1).next(function(err, newest) {
+				var cached = newest ? newest.cached : new Date(0);
+
+				pump(
+					request('http://node-modules.com/modules.json', {
+						qs: {
+							cached: cached.toISOString()
+						}
+					}),
+					JSONStream.parse('*'),
+					stream.writable({objectMode:true}, function(data, enc, callback) {
+						data.cached = new Date(data.cached);
+						data.created = new Date(data.created);
+						data.updated = new Date(data.updated);
+						if (data.updated > updated) updated = data.updated;
+
+						var name = data._id;
+						if (name.length > 20) name = name.slice(0, 20)+'...';
+
+						log('updating #'+(++inc)+' ('+name+')');
+						mongo.modules.save(data, callback);
+					}),
+					function() {
+						mongo.meta.save({_id:'modules', updated:updated}, function() {
+							console.log('modules are up-to-date');
+							process.exit(0);
+						});
 					}
-				}),
-				JSONStream.parse('*'),
-				stream.writable({objectMode:true}, function(data, enc, callback) {
-					data.cached = new Date(data.cached);
-					data.created = new Date(data.created);
-					data.updated = new Date(data.updated);
-
-					var name = data._id;
-					if (name.length > 20) name = name.slice(0, 20)+'...';
-
-					log('updating #'+(++inc)+' ('+name+')');
-					mongo.modules.save(data, callback);
-				}),
-				function() {
-					console.log('modules are up-to-date');
-					process.exit(0);
-				}
-			);
+				);
+			});
 		});
 	};
 
