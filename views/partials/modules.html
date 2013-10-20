@@ -3,7 +3,7 @@
 		<% if (mod.stars) { %>
 			<span class="stars"><%= mod.stars %></span>
 		<% } %>
-		<h2><a href="<%= mod.url %>"><%= mod.name %></a></h2>
+		<h2><a href="<%= mod.url %>"><%= mod.name %></a> <span class="version"><%= mod.version %></span></h2>
 		<div class="subline">
 			by <a href="<%= mod.profile %>" class="<%= mod.related ? 'following' : '' %>"><%= mod.author %></a>
 			<% if (mod.relation.length || mod.dependents) { %>
