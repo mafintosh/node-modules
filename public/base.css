@@ -220,8 +220,8 @@ input[type="submit"] {
 }
 
 #search .module .version {
-	margin-left: .6em;
+	margin-left: 5px;
 	color: #999;
 	font-weight: normal;
-	font-size: 70%;
+	font-size: 14px;
 }

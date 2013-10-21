@@ -65,7 +65,8 @@ var unpack = function(mod, packed) {
 		dependents: mod.dependents.length,
 		description: mod.description,
 		url: gh && gh.url || 'https://npmjs.org/package/'+mod._id,
-		marker: marker(mod._id, packed[1])
+		marker: marker(mod._id, packed[1]),
+		version: mod.version
 	};
 };
 
