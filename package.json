@@ -1,6 +1,6 @@
 {
   "name": "node-modules",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Better search for Node.js modules",
   "repository": "git://github.com/mafintosh/node-modules.git",
   "dependencies": {
