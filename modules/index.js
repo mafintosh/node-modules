@@ -69,7 +69,6 @@ exports.update = function(opts, callback) {
 	progress.on('end', callback);
 
 	opts.maxAge = opts.maxAge || 3600 * 1000;
-	opts.optimistic = opts.optimistic !== false;
 
 	var fetchOnce = once(function(name, callback) {
 		fetch(name, opts, callback);
