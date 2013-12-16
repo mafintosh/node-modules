@@ -31,6 +31,7 @@ var once = function(fn) {
 	var col = {};
 
 	return function(name, callback) {
+		name = '.'+name;
 		if (col[name]) return col[name](callback);
 
 		col[name] = thunky(function(callback) {
