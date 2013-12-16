@@ -121,14 +121,17 @@ exports.update = function(opts, callback) {
 		var diff = {};
 
 		fresh.dependencies.forEach(function(dep) {
-			diff[dep] = 1;
+			diff['.'+dep] = 1;
 		});
 		stale.dependencies.forEach(function(dep) {
+			dep = '.'+dep;
 			if (diff[dep] === 1) delete diff[dep];
 			else diff[dep] = -1;
 		});
 
-		diff = Object.keys(diff);
+		diff = Object.keys(diff).map(function(dep) {
+			return dep.slice(1);
+		});
 
 		var i = 0;
 		var loop = function(err) {
