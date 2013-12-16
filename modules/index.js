@@ -31,14 +31,15 @@ var once = function(fn) {
 	var col = {};
 
 	return function(name, callback) {
-		name = '.'+name;
-		if (col[name]) return col[name](callback);
+		var key = '.'+name;
 
-		col[name] = thunky(function(callback) {
+		if (col[key]) return col[key](callback);
+
+		col[key] = thunky(function(callback) {
 			fn(name, callback);
 		});
 
-		col[name](callback);
+		col[key](callback);
 	};
 };
 
