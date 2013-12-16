@@ -10,7 +10,8 @@ var AGENT_SSL = new ForeverAgent.SSL();
 
 var githubRequest = request.defaults({
 	qs: GITHUB_USER,
-	agent: AGENT_SSL
+	agent: AGENT_SSL,
+	timeout: 30000
 });
 
 var httpRequest = request.defaults({

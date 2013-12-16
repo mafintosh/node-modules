@@ -1,4 +1,3 @@
-var request = require('request');
 var getJSON = require('../getJSON');
 
 var RATE_LIMIT_RETRY = 10*60*1000; // ten minutes // TODO: make this an option instead
