@@ -127,6 +127,9 @@ app.get('/{version}/public/*', function(request, response) {
 app.get('/authorize', function(request, response) {
 	var q = encodeURIComponent(string(request.query.q));
 	req.post('https://github.com/login/oauth/access_token', {
+		headers: {
+			'User-Agent': 'node-modules.com'
+		},
 		form: {
 			client_id: param('github.client'),
 			client_secret: param('github.secret'),
@@ -136,6 +139,9 @@ app.get('/authorize', function(request, response) {
 		if (err) return response.error(err);
 		req('https://api.github.com/user', {
 			json:true,
+			headers: {
+				'User-Agent': 'node-modules.com'
+			},
 			qs: {
 				access_token: qs.parse(body).access_token
 			}
