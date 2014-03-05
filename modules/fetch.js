@@ -106,10 +106,12 @@ var lookup = function(name, opts, callback) {
 
 		var min = versions.reduce(function(min, cur) {
 			if (!npm.versions[cur]) return min;
+			if (!npm.versions[min]) return cur;
 			return npm.time[min] < npm.time[cur] ? min : cur;
 		});
 		var max = versions.reduce(function(max, cur) {
 			if (!npm.versions[cur]) return max;
+			if (!npm.versions[max]) return cur;
 			return npm.time[max] > npm.time[cur] ? max : cur;
 		});
 
@@ -140,6 +142,7 @@ var lookup = function(name, opts, callback) {
 			findRepository(maintainers, repository, function(err, github) {
 				if (!github) return callback(null, mod);
 				mod.github = github;
+				console.log(mod);
 				callback(null, mod);
 			});
 		});
