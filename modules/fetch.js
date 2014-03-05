@@ -142,7 +142,6 @@ var lookup = function(name, opts, callback) {
 			findRepository(maintainers, repository, function(err, github) {
 				if (!github) return callback(null, mod);
 				mod.github = github;
-				console.log(mod);
 				callback(null, mod);
 			});
 		});
