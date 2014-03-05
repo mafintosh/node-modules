@@ -105,9 +105,11 @@ var lookup = function(name, opts, callback) {
 		if (!versions.length) return callback();
 
 		var min = versions.reduce(function(min, cur) {
+			if (!npm.versions[cur]) return min;
 			return npm.time[min] < npm.time[cur] ? min : cur;
 		});
 		var max = versions.reduce(function(max, cur) {
+			if (!npm.versions[cur]) return max;
 			return npm.time[max] > npm.time[cur] ? max : cur;
 		});
 
@@ -119,6 +121,7 @@ var lookup = function(name, opts, callback) {
 		mod.cached = new Date();
 
 		npm = npm.versions[max];
+		if (!npm) return callback();
 
 		mod.url = 'https://npmjs.org/package/'+enc(name);
 		mod.description = npm.description || '';
