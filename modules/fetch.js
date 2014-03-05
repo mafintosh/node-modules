@@ -121,7 +121,6 @@ var lookup = function(name, opts, callback) {
 		mod.cached = new Date();
 
 		npm = npm.versions[max];
-		if (!npm) return callback();
 
 		mod.url = 'https://npmjs.org/package/'+enc(name);
 		mod.description = npm.description || '';
