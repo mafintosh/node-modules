@@ -79,13 +79,14 @@ input[type="submit"] {
 	-moz-appearance: none;
 }
 
+#top {
+	text-align: center;
+	margin-top: 20%;
+}
+
 #frontpage, #about, #mission {
 	width: 408px;
 	margin: auto;
-	margin-top: 20%;
-	padding-top: 175px;
-	background-image: url('logo/logo4b.png');
-	background-repeat: no-repeat;
 }
 
 #frontpage .text {
