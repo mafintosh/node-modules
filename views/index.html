@@ -1,26 +1,19 @@
-<!doctype html>
-<html>
-	<head>
-		<title>Better search for Node.js modules</title>
-		<link rel="shortcut icon" href="<%- fingerprint('/public/favicon.ico') %>">
-		<link rel="stylesheet" type="text/css" href="<%- fingerprint('/public/base.css') %>">
-		<%{ 'partials/google-analytics.html' }%>
-	</head>
-	<body>
-		<div class="main">
-			<%{ 'partials/top.html' }%>
-			<div id="frontpage">
-				<form action="/search">
-					<div class="oneline" style="margin-top:10px">
-						<input type="text" name="q" id="q" placeholder="Enter a search query" value="<%= locals.query || '' %>" autofocus>
-						<input type="submit" value="Search">
-					</div>
-					<% if (!anon) { %>
-						<span class="text">Searches are personalized to <a href="http://github.com/<%= username %>"><%= username %></a>. <a href="/?u=">Reset account</a>.</span>
-					<% } %>
-				</form>
-				<%{ 'partials/menu.html' }%>
-			</div>
+<%{ './partials/base.html' }%>
+<%{ title %>Better search for Node.js modules<%}%>
+<%{ content %>
+	<div class="main">
+		<%{ 'partials/top.html' }%>
+		<div id="frontpage">
+			<form action="/search">
+				<div class="oneline" style="margin-top:10px">
+					<input type="text" name="q" id="q" placeholder="Enter a search query" value="<%= locals.query || '' %>" autofocus>
+					<input type="submit" value="Search">
+				</div>
+				<% if (!anon) { %>
+					<span class="text">Searches are personalized to <a href="http://github.com/<%= username %>"><%= username %></a>. <a href="/?u=">Reset account</a>.</span>
+				<% } %>
+			</form>
+			<%{ 'partials/menu.html' }%>
 		</div>
-	</body>
-</html>
+	</div>
+<%} %>

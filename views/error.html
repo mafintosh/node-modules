@@ -1,27 +1,11 @@
-<!doctype html>
-<html>
-	<head>
-		<title>Oooops</title>
-		<link rel="shortcut icon" href="<%- fingerprint('/public/favicon.ico') %>">
-		<link rel="stylesheet" type="text/css" href="<%- fingerprint('/public/base.css') %>">
-		<%{ 'partials/google-analytics.html' }%>
-	</head>
-	<body>
-		<div id="nav">
-			<div class="main">
-				<a href="/?u=<%= username %>"><img src="<%- fingerprint('/public/logo/logo1b.png') %>"></a>
-				<form action="/search" class="oneline">
-					<input type="hidden" name="u" id="u" value="<%= username %>">
-					<input type="text" name="q" id="q" autofocus placeholder="Search for modules" value="">
-					<input type="submit" value="Search">
-				</form>
-			</div>
+<%{ './partials/base.html' }%>
+<%{ title %>Oooops<%}%>
+<%{ content %>
+	<%{ './partials/topSearch.html' }%>
+	<div class="main offset">
+		<div class="error block">
+			<h2>Oooooops! <%= title %></h2>
+			<pre><%= message %></pre>
 		</div>
-		<div class="main offset">
-			<div class="error block">
-				<h2>Oooooops! <%= title %></h2>
-				<pre><%= message %></pre>
-			</div>
-		</div>
-	</body>
-</html>
+	</div>
+<%} %>

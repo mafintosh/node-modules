@@ -17,6 +17,9 @@ var FINGERPRINT_MAX_AGE = 365 * 24 * 3600;
 var FINGERPRINT = param('fingerprint') && param('fingerprint').toString().trim();
 
 var app = root();
+var views = pejs({
+	compress: true
+});
 
 var string = function(str) {
 	return str ? str+'' : '';
@@ -26,7 +29,6 @@ var fingerprint = function(url) {
 	return FINGERPRINT ? 'http://dzdv0sfntaeum.cloudfront.net/'+FINGERPRINT+url : url;
 };
 
-pejs.compress = true;
 app.use('response.render', function(filename, locals) {
 	var response = this;
 
@@ -36,7 +38,8 @@ app.use('response.render', function(filename, locals) {
 	locals.fingerprint = fingerprint;
 	locals.query = string(this.request.query.q);
 
-	pejs.render(filename, locals, function(err, html) {
+
+	views.render(filename, locals, function(err, html) {
 		if (err) return response.error(err);
 		response.send(html);
 	});

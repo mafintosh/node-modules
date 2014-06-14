@@ -1,50 +1,37 @@
-<!doctype html>
-<html>
-	<head>
-		<title><%= query %></title>
-		<link rel="shortcut icon" href="<%- fingerprint('/public/favicon.ico') %>">
-		<link rel="stylesheet" type="text/css" href="<%- fingerprint('/public/base.css') %>">
-		<%{ 'partials/google-analytics.html' }%>
-		<script>
-			window.QUERY=<%- JSON.stringify(encodeURIComponent(query)) %>;
-			window.USERNAME=<%- JSON.stringify(encodeURIComponent(username)) %>;
-		</script>
-	</head>
-	<body>
-		<div id="nav">
-			<div class="main">
-				<a href="/"><img src="<%- fingerprint('/public/logo/logo1b.png') %>"></a>
-				<form action="/search" class="oneline">
-					<input type="text" name="q" id="q" placeholder="Search for modules" value="<%= query %>">
-					<input type="hidden" name="u" id="u" value="<%= username %>">
-					<input type="submit" value="Search">
-				</form>
+<%{ './partials/base.html' }%>
+<%{ title %><%= query %><%}%>
+<%{ head %>
+	<script>
+		window.QUERY=<%- JSON.stringify(encodeURIComponent(query)) %>;
+		window.USERNAME=<%- JSON.stringify(encodeURIComponent(username)) %>;
+	</script>
+<%} %>
+
+<%{ content %>
+	<%{ './partials/topSearch.html' }%>
+	<div id="search" class="main offset">
+		<% if (!modules.length) { %>
+			<div class="warn block">
+				<h2>No modules were found</h2>
+				<span>Try searching for something less specific, e.g. <a href="/search?q=web+framework">web framework</a> or <a href="/search?q=database">database</a></span>
 			</div>
-		</div>
-		<div id="search" class="main offset">
-			<% if (!modules.length) { %>
-				<div class="warn block">
-					<h2>No modules were found</h2>
-					<span>Try searching for something less specific, e.g. <a href="/search?q=web+framework">web framework</a> or <a href="/search?q=database">database</a></span>
-				</div>
-			<% } else { %>
-				<div class="personalize block">
-					<% if (username) { %>
-						<span>
-							Results are personalized to
-							<a href="http://github.com/<%= username %>"><%= username %></a>
-							using <span class="bold">stars</span> and <span class="bold">follows</span> on Github.
-						</span>
-					<% } else { %>
-						<span>
-							For better results using your <span class="bold">project stars</span> and <span class="bold">follows</span> on Github,
-							<a href="/personalize?q=<%= encodeURIComponent(query) %>">personalize your account</a>
-						</span>.
-					<% } %>
-				</div>
-			<% } %>
-			<%{ 'partials/modules.html'	 }%>
-		</div>
-		<script src="<%- fingerprint('/public/search.js') %>"></script>
-	</body>
-</html>
+		<% } else { %>
+			<div class="personalize block">
+				<% if (username) { %>
+					<span>
+						Results are personalized to
+						<a href="http://github.com/<%= username %>"><%= username %></a>
+						using <span class="bold">stars</span> and <span class="bold">follows</span> on Github.
+					</span>
+				<% } else { %>
+					<span>
+						For better results using your <span class="bold">project stars</span> and <span class="bold">follows</span> on Github,
+						<a href="/personalize?q=<%= encodeURIComponent(query) %>">personalize your account</a>
+					</span>.
+				<% } %>
+			</div>
+		<% } %>
+		<%{ 'partials/modules.html'	 }%>
+	</div>
+	<script src="<%- fingerprint('/public/search.js') %>"></script>
+<%} %>
