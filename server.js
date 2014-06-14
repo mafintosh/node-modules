@@ -36,7 +36,7 @@ app.use('response.render', function(filename, locals) {
 	locals.fingerprint = fingerprint;
 	locals.query = string(this.request.query.q);
 
-	pejs.render(filename, locals, function(err, html) {
+	pejs().render(filename, locals, function(err, html) {
 		if (err) return response.error(err);
 		response.send(html);
 	});
