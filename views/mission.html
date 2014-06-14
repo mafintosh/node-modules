@@ -1,26 +1,19 @@
-<!doctype html>
-<html>
-	<head>
-		<title>Mission statement</title>
-		<link rel="shortcut icon" href="<%- fingerprint('/public/favicon.ico') %>">
-		<link rel="stylesheet" type="text/css" href="<%- fingerprint('/public/base.css') %>">
-		<%{ 'partials/google-analytics.html' }%>
-	</head>
-	<body>
-		<div class="main">
-			<%{ 'partials/top.html' }%>
-			<div id="mission">
-				<h2>Mission: to enhance the way modules are used in the Node.js community</h2>
-				<ol>
-					<li>Developers should be able to find great modules with ease. Otherwise a lot of duplicate code is written.</li>
-					<li>Discuss, teach, and enhance the way we write modules - single-purpose modules are better.</li>
-					<li>Make the community more aware of unknown, but powerful modules.</li>
-				</ol>
-				<p>Our mission is to make the Node.js community even better. We believe that npm is one of the major reasons to why Node.js is where we are now - but that it could be even better.</p>
-				<p>With tens of thousands modules it becomes hard to find that "one" module that actually does what you want, and which is the one the community approves of the most. To solve this we need a better search engine, which we think we have created, and will put out here on node-modules.com.</p>
-				<p>At the same time there is also concensus in the community that smaller modules with a single purpose are "better", but since the community has grown we can also see that newer developers do not understand this. This is why we want people from the community to write about specific modules that they like, and we will all be able to discuss it here - to enhance the community.</p>
-				<%{ 'partials/menu.html' }%>
-			</div>
+<%{ './partials/base.html' }%>
+<%{ title %>Mission<%}%>
+<%{ content %>
+	<div class="main">
+		<%{ 'partials/top.html' }%>
+		<div id="mission">
+			<h2>Mission: to enhance the way modules are used in the Node.js community</h2>
+			<ol>
+				<li>Developers should be able to find great modules with ease. Otherwise a lot of duplicate code is written.</li>
+				<li>Discuss, teach, and enhance the way we write modules - single-purpose modules are better.</li>
+				<li>Make the community more aware of unknown, but powerful modules.</li>
+			</ol>
+			<p>Our mission is to make the Node.js community even better. We believe that npm is one of the major reasons to why Node.js is where we are now - but that it could be even better.</p>
+			<p>With tens of thousands modules it becomes hard to find that "one" module that actually does what you want, and which is the one the community approves of the most. To solve this we need a better search engine, which we think we have created, and will put out here on node-modules.com.</p>
+			<p>At the same time there is also concensus in the community that smaller modules with a single purpose are "better", but since the community has grown we can also see that newer developers do not understand this. This is why we want people from the community to write about specific modules that they like, and we will all be able to discuss it here - to enhance the community.</p>
+			<%{ 'partials/menu.html' }%>
 		</div>
-	</body>
-</html>
+	</div>
+<%} %>
