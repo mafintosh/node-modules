@@ -190,13 +190,6 @@ app.get('/mission', function(request, response) {
 	response.render('mission.html');
 });
 
-app.get('/modules/{name}.json', function(request, response) {
-	modules.get(request.params.name, function(err, module) {
-		if (err) return response.error(err);
-		response.render('module.html');
-	});
-});
-
 app.error(404, function(request, response) {
 	response.render('error.html', {
 		title:'404 Not Found',
