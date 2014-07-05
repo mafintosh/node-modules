@@ -167,6 +167,10 @@ app.get('/personalize', function(request, response) {
 	response.redirect(url);
 });
 
+app.get('/~{username}', function(request, response) {
+	response.redirect('/search?q='+encodeURIComponent('@'+request.params.username));
+});
+
 app.get('/search', function(request, response) {
 	request.search(function(err, modules) {
 		if (err) return response.error(err);
