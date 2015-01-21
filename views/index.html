@@ -9,7 +9,11 @@
 					<input type="text" name="q" id="q" placeholder="Enter a search query" value="<%= locals.query || '' %>" autofocus>
 					<input type="submit" value="Search">
 				</div>
-				<% if (!anon) { %>
+				<% if (anon) { %>
+					<span class="text">
+						<a href="/personalize?f=true&q=<%= encodeURIComponent(locals.query || '') %>">Personalize your account</a> for better results using your <span class="bold">project stars</span> and <span class="bold">follows</span> on Github.
+					</span>
+				<% } else { %>
 					<span class="text">Searches are personalized to <a href="http://github.com/<%= username %>"><%= username %></a>. <a href="/?u=">Reset account</a>.</span>
 				<% } %>
 			</form>

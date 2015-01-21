@@ -150,6 +150,7 @@ app.get('/authorize', function(request, response) {
 			}
 		}, function(err, res) {
 			if (err) return response.error(err);
+			if (request.query.f) return response.redirect('http://'+param('host')+'/?u='+string(res.body.login));
 			response.redirect('http://'+param('host')+'/search?q='+q+'&u='+string(res.body.login));
 		});
 	});
@@ -159,9 +160,10 @@ app.get('/personalize', function(request, response) {
 	if (!param('github.secret')) return response.error(new Error('github secret is not configured'));
 
 	var q = encodeURIComponent(string(request.query.q));
+	var f = encodeURIComponent(string(request.query.f));
 	var url = 'https://github.com/login/oauth/authorize?'+qs.stringify({
 		client_id: param('github.client'),
-		redirect_uri:'http://'+param('host')+'/authorize?q='+q
+		redirect_uri:'http://'+param('host')+'/authorize?q='+q+'&f='+f
 	});
 
 	response.redirect(url);
