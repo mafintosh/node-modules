@@ -59,7 +59,11 @@ var lookup = function(name, opts, callback) {
 		};
 
 		var onrepository = function(username, repository) {
-			getJSONRetry('https://api.github.com/repos/'+repository+'/collaborators/'+username, function(err, collab) {
+			getJSONRetry('https://api.github.com/repos/'+repository+'/contributors', function(err, collabs) {
+				var collab = collabs && collabs.some(function (c) {
+					return c.login === username;
+				});
+
 				getJSONRetry('https://api.github.com/repos/'+repository, function(err, repo) {
 					if (err) return next();
 					if (!collab && maintainers.length) return next();
