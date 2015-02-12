@@ -60,7 +60,7 @@ var lookup = function(name, opts, callback) {
 
 		var onrepository = function(username, repository) {
 			getJSONRetry('https://api.github.com/repos/'+repository+'/contributors', function(err, collabs) {
-				var collab = collabs && collabs.some(function (c) {
+				var collab = collabs === true || collabs && collabs.some(function (c) {
 					return c.login === username;
 				});
 
