@@ -20,5 +20,11 @@
 		<p class="description">
 			<%= mod.description %>
 		</p>
+		<% if (mod.gh_url) { %>
+		<p class="links">
+			<a href="<%= mod.npm_url %>">npm</a>
+			<a href="<%= mod.gh_url %>">github</a>
+		</p>
+		<% } %>
 	</div>
 <% }) %>

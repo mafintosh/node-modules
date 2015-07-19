@@ -226,3 +226,7 @@ input[type="submit"] {
 	font-weight: normal;
 	font-size: 14px;
 }
+
+#search .module .links {
+	margin: 15px 0 0;
+}
