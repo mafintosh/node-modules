@@ -62,6 +62,7 @@ app.on('route', function(request, response) {
 
 	request.username = username = username.toLowerCase();
 	response.setHeader('Set-Cookie', cookie.serialize('username', username, {maxAge:COOKIE_MAX_AGE}));
+	response.setHeader('Access-Control-Allow-Origin', '*');
 });
 
 app.get('/package/{name}.json', function(request, response) {
