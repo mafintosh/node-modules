@@ -4,19 +4,40 @@ var thunky = require('thunky');
 var JSONStream = require('JSONStream');
 var EventEmitter = require('events').EventEmitter;
 var stream = require('stream-wrapper');
+var thunky = require('thunky');
 var LRU = require('lru-cache');
+var ndjson = require('ndjson');
 var getJSON = require('../getJSON');
 var fetch = require('./fetch');
-var mongo = require('../mongo');
+var level = require('../level');
+var intersect = require('sorted-intersect-stream');
+
 
 stream = stream.defaults({objectMode:true});
 
 var noop = function() {};
+var modulesAdded = 0;
 var cache = new LRU(50000);
+
+var countModules = thunky(function (cb) {
+	var cnt = 0
+	level.modules.createReadStream()
+		.on('data', function () {
+			cnt++
+		})
+		.on('error', function (err) {
+			cb(err)
+		})
+		.on('end', function () {
+			cb(null, cnt)
+		})
+})
+
+countModules() // trigger this right away to avoid rcs
 
 exports.get = function(name, callback) {
 	if (cache.has(name)) return callback(null, cache.get(name));
-	mongo.modules.findOne({_id:name}, function(err, module) {
+	level.modules.get(name, function(err, module) {
 		if (err) return callback(err);
 		cache.set(name, module);
 		callback(null, module);
@@ -43,21 +64,170 @@ var once = function(fn) {
 	};
 };
 
+var toISOString = function (d) {
+  return d.toISOString ? d.toISOString() : d
+}
+
+var indexModule = function (mod, old, cb) {
+  var batch = []
+
+  if (old && old.github) {
+    batch.push({
+      type: 'del',
+      prefix: level.modules.username,
+      key: old.github.username + '~' + toISOString(old.cached) + '~' + old._id
+    })
+    batch.push({
+      type: 'del',
+      prefix: level.modules.cached,
+      key: toISOString(old.cached) + '~' + old._id
+    })
+
+    for (var i = 0; i < old.github.dependents.length; i++) {
+      batch.push({
+        type: 'del',
+        prefix: level.modules.dependents,
+        key: old.github.dependents[i] + '~' + toISOString(old.cached) + '~' + old._id,
+      })
+    }
+  }
+
+  if (mod.github) {
+    batch.push({
+      type: 'put',
+      prefix: level.modules.username,
+      key: mod.github.username + '~' + toISOString(mod.cached) + '~' + mod._id,
+      value: mod._id
+    })
+    batch.push({
+      type: 'put',
+      prefix: level.modules.cached,
+      key: toISOString(mod.cached) + '~' + mod._id,
+      value: mod._id
+    })
+
+    for (var i = 0; i < mod.github.dependents.length; i++) {
+      batch.push({
+        type: 'put',
+        prefix: level.modules.dependents,
+        key: mod.github.dependents[i] + '~' + toISOString(mod.cached) + '~' + mod._id,
+        value: mod._id
+      })
+    }
+  }
+
+  batch.push({
+    type: 'put',
+    prefix: level.modules,
+    key: mod._id,
+    value: mod
+  })
+
+  if (!old) modulesAdded++
+  level.batch(batch, cb)
+}
+
 exports.info = function(callback) {
-	mongo.modules.count(function(err, count) {
+	countModules(function(err, baseCount) {
 		if (err) return callback(err);
-		mongo.meta.findOne({_id:'modules'}, function(err, meta) {
-			if (err) return callback(err);
+		level.meta.get('modules', function(err, meta) {
+			if (err && !err.notFound) return callback(err);
 			callback(null, {
-				modules: count,
-				updated: meta && meta.updated || new Date(0)
+				modules: baseCount + modulesAdded,
+				seq: meta && meta.seq || 0
 			});
 		});
 	});
 };
 
-exports.createReadStream = function() { // TODO: maybe populate the cache with this stream?
-	return mongo.modules.find.apply(mongo.modules, arguments);
+var createSearchStream = function (q) {
+	if (q.cached) {
+		if (q.username) {
+			return level.modules.username.createReadStream({
+				gt: q.username + '~' + toISOString(q.cached) + '~',
+				lt: q.username + '~' + toISOString(q.cached) + '~~'
+			})
+		}
+		if (q.dependents) {
+			return level.modules.dependents.createReadStream({
+				gt: q.dependents + '~' + toISOString(q.cached) + '~',
+				lt: q.dependents + '~' + toISOString(q.cached) + '~~'
+			})
+		}
+		return level.modules.cached.createReadStream({
+			gt: toISOString(q.cached) + '~',
+			lt: toISOString(q.cached) + '~~'
+		})
+	}
+	if (q.username) {
+		return level.modules.username.createReadStream({
+			gt: q.username + '~',
+			lt: q.username + '~~'
+		})
+	}
+	if (q.dependents) {
+		return level.modules.dependents.createReadStream({
+			gt: q.dependents + '~',
+			lt: q.dependents + '~~'
+		})
+	}
+
+	return level.modules.createReadStream()
+}
+
+var toArray = function (arr) {
+	if (Array.isArray(arr)) return arr
+	return [].concat(arr || [])
+}
+
+var keyify = function(data) {
+	return data.key.slice(data.key.lastIndexOf('~') + 1)
+}
+
+exports.createReadStream = function(queries) {
+	if (!Array.isArray(queries)) queries = [queries]
+
+	var normalized = []
+
+	for (var i = 0; i < queries.length; i++) {
+		var q = queries[i]
+		var deps = toArray(q.dependents)
+		var username = toArray(q.username)
+
+		for (var j = 0; j < deps.length; j++) {
+			normalized.push({
+				cached: q.cached,
+				dependents: deps[j]
+			})
+		}
+		for (var j = 0; j < username.length; j++) {
+			normalized.push({
+				cached: q.cached,
+				username: username[j]
+			})
+		}
+		if (!q.dependents && !q.username) {
+			normalized.push({
+				cached: q.cached
+			})
+		}
+	}
+
+	if (!normalized.length) normalized = [{}]
+
+	var results = normalized
+		.map(createSearchStream)
+		.reduce(function (a, b) {
+			return intersect(a, b, keyify)
+		})
+
+	var mods = stream.transform(function (data, enc, cb) {
+		if (typeof data.value === 'string') return exports.get(data.value, cb)
+		cb(null, data.value)
+	})
+
+	pump(results, mods)
+	return mods
 };
 
 exports.update = function(opts, callback) {
@@ -88,9 +258,9 @@ exports.update = function(opts, callback) {
 					module.github = module.github || {};
 					module.github.dependents = Object.keys(uniq);
 					cache.del(module._id);
-					mongo.modules.findOne({_id:module._id}, function(err, stale) {
-						if (err) return callback(err);
-						mongo.modules.save(module, function(err) {
+					level.modules.get(module._id, function(err, stale) {
+						if (err && !err.notFound) return callback(err);
+						indexModule(module, stale, function(err) {
 							if (err) return callback(err);
 							if (!ended) progress.emit('module', module);
 							callback(null, module, stale);
@@ -107,7 +277,8 @@ exports.update = function(opts, callback) {
 					loop();
 				};
 
-				mongo.modules.findOne({_id:name}, function(err, dep) {
+				level.modules.get(name, function(err, dep) {
+					if (err && err.notFound) err = null;
 					if (err || dep) return ondep(err, dep);
 					fetchOnce(name, ondep);
 				});
@@ -143,22 +314,29 @@ exports.update = function(opts, callback) {
 		loop();
 	};
 
-	var onlastupdated = function(date) {
+	var onlastupdated = function(seq) {
 		pump(
-			request('http://registry.npmjs.org/-/_view/browseUpdated?group_level=2&startkey='+encJSON([date])),
-			JSONStream.parse('rows.*'),
+			request('https://skimdb.npmjs.com/registry/_changes?since='+seq),
+			JSONStream.parse('results.*'),
 			stream.transform(function(row, enc, callback) {
-				ensureModule(row.key[1], function(err, fresh, stale) {
+				ensureModule(row.id, function retry (err, fresh, stale) {
+					if (err && opts.maxAge) {
+						opts.forceRetryError = true;
+						return ensureModule(row.id, retry);
+					}
+
+					opts.forceRetryError = false;
+
 					if (err) return callback(err);
-					if (!stale || !fresh) return callback(null, row.key[0]);
+					if (!stale || !fresh) return callback(null, row);
 
 					ensureDependencies(fresh, stale, function() {
-						callback(err, row.key[0]);
+						callback(err, row);
 					});
 				});
 			}),
-			stream.writable(function(updated, enc, callback) {
-				mongo.meta.update({_id:'modules'}, {$set:{updated:new Date(updated)}}, {upsert:true}, callback);
+			stream.writable(function(row, enc, callback) {
+				level.meta.put('modules', {seq: row.seq}, callback);
 			}),
 			function(err) {
 				ended = true;
@@ -167,14 +345,12 @@ exports.update = function(opts, callback) {
 		);
 	};
 
-	if (opts.updated) {
-		onlastupdated(opts.updated);
-	} else {
-		mongo.meta.findOne({_id:'modules'}, function(err, doc) {
-			if (err) return progress.emit('error', err);
-			onlastupdated(doc.updated);
-		});
-	}
+	if (opts.updated) throw new Error('options.updated is no longer supported. fix me.');
+
+	level.meta.get('modules', function(err, doc) {
+		if (err && !err.notFound) return progress.emit('error', err);
+		onlastupdated(doc ? doc.seq : 0);
+	});
 
 	return progress;
 };

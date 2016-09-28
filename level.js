@@ -12,5 +12,11 @@ var define = function(name) {
 define('etags');
 define('index');
 define('index.users');
+define('modules');
+define('modules.cached');
+define('modules.dependents');
+define('modules.username');
+define('meta');
+define('users');
 
 module.exports = db;

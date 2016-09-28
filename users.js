@@ -6,7 +6,7 @@ var pump = require('pump');
 var EventEmitter = require('events').EventEmitter;
 var index = require('./search-index');
 var getJSON = require('./getJSON');
-var mongo = require('./mongo');
+var level = require('./level');
 
 stream = stream.defaults({objectMode:true});
 
@@ -70,7 +70,7 @@ var fetch = function(username, callback) {
 var fetchAndSave = function(username, callback) {
 	fetch(username, function(err, user) {
 		if (err) return callback(err);
-		mongo.users.save(user, function(err) {
+		level.users.put(user._id, user, function(err) {
 			if (err) return callback(err);
 			callback(null, user);
 		});
@@ -113,9 +113,9 @@ exports.update = function(callback) {
 	var progress = new EventEmitter();
 
 	pump(
-		mongo.users.find({}, {_id:1}),
-		stream.transform(function(user, enc, callback) {
-			updateUser(user._id, callback);
+		level.users.createKeyStream(),
+		stream.transform(function(id, enc, callback) {
+			updateUser(id, callback);
 		}),
 		stream.writable(function(user, enc, callback) {
 			progress.emit('user', user);
@@ -129,22 +129,12 @@ exports.update = function(callback) {
 	return progress;
 };
 
-exports.createReadStream = function() {
-	return mongo.users.find().apply(mongo.users, arguments);
-};
-
-exports.info = function() {
-	mongo.users.count(function(err, count) {
-		callback(null, {users:count});
-	});
-};
-
 exports.get = function(username, callback) {
 	if (!username) username = index.nobody._id;
 	if (cache.has(username)) return cache.get(username)(callback);
 
 	var get = thunky(function(callback) {
-		mongo.users.findOne({_id:username}, function(err, user) {
+		level.users.get(username, function(err, user) {
 			if (!user) return fetchAndIndex(username, callback);
 			index.contains(user, function(err, contains) {
 				if (contains) return callback(null, user);

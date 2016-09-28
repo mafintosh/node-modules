@@ -30,14 +30,16 @@ module.exports = function(url, opts, callback) {
 	level.etags.get(url, function(_, data) {
 		if (opts.force) data = null;
 
-		if (data && opts.optimistic) { // status requests probably never change...
-			if (data.body === null) return callback(new Error('bad request'));
-			if (data.body === true) return callback(null, data.body);
-		}
+		if (data && (!opts.forceRetryError || data.body !== null)) {
+			if (opts.optimistic) { // status requests probably never change...
+				if (data.body === null) return callback(new Error('bad request'));
+				if (data.body === true) return callback(null, data.body);
+			}
 
-		if (data && Date.now() - data.updated < opts.maxAge) {
-			if (data.body === null) return callback(new Error('bad request'));
-			return callback(null, data.body);
+			if (Date.now() - data.updated < opts.maxAge) {
+				if (data.body === null) return callback(new Error('bad request'));
+				return callback(null, data.body);
+			}
 		}
 
 		matchRequest(url)(url, {

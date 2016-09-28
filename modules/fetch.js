@@ -39,7 +39,7 @@ var lookup = function(name, opts, callback) {
 	};
 
 	var findRepository = function(maintainers, repository, callback) {
-		if (!maintainers.length) return callback();
+		if (!maintainers || !maintainers.length) return callback();
 
 		var maintainer = maintainers.shift().name;
 
@@ -121,7 +121,7 @@ var lookup = function(name, opts, callback) {
 
 		mod._id = name;
 		mod.version = max;
-		mod.maintainer = maintainers[0].name;
+		mod.maintainer = (maintainers && maintainers[0]) ? maintainers[0].name : '_unknown';
 		mod.created = new Date(npm.time[min]);
 		mod.updated = new Date(npm.time[max]);
 		mod.cached = new Date();

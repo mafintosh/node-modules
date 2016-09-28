@@ -7,12 +7,11 @@
     "JSONStream": "~0.6.4",
     "after": "~0.8.1",
     "cookie": "~0.1.0",
-    "forever-agent": "^0.5.2",
+    "forever-agent": "^0.6.1",
     "level": "^0.18.0",
     "level-delete-range": "~0.1.0",
     "level-sublevel": "~5.1.1",
     "lru-cache": "~2.3.0",
-    "mongojs": "^1.3.0",
     "once": "~1.1.1",
     "param": "~0.3.1",
     "pejs": "~0.6.5",
@@ -24,10 +23,7 @@
     "sorted-intersect-stream": "~0.2.5",
     "sorted-union-stream": "~0.2.3",
     "stream-wrapper": "~0.1.1",
-    "thunky": "~0.1.0"
+    "thunky": "^0.1.0"
   },
-  "main": "server.js",
-  "scripts": {
-    "setup-dev": "npm install . && ./setup-dev"
-  }
+  "main": "server.js"
 }
