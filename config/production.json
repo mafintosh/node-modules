@@ -6,6 +6,6 @@
 		"secret": "{$GITHUB_SECRET}"
 	},
 	"port": "{$PORT}",
-	"host": "node-modules.mafintosh.com",
+	"host": "node-modules.com",
 	"autoupdate": true
 }
