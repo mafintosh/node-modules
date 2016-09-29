@@ -151,8 +151,8 @@ var updateNobody = thunky(function(callback) { // we NEED to update the anon ind
 
 var updateUser = function(user, callback) {
 	var generateQuery = function(old) {
-		if (isNobody(user) && !old) return {};
-		if (isNobody(user)) return {cached: {$gte: new Date(old.cached)}};
+		if (isNobody(user) && !old) return [{}];
+		if (isNobody(user)) return [{cached: new Date(old.cached)}];
 
 		var ors = [];
 		var relevant = diff(user, exports.nobody);
@@ -160,22 +160,22 @@ var updateUser = function(user, callback) {
 
 		if (changes.length) {
 			ors.push({
-				'github.username': {$in: changes}
+				username: changes
 			}, {
-				'github.dependents': {$in: changes}
+				dependents: changes
 			});
 		}
 		if (old) {
 			ors.push({
-				cached: {$gte: new Date(old.cached)},
-				'github.username': {$in: relevant}
+				cached: new Date(old.cached),
+				username: relevant
 			}, {
-				cached: {$gte: new Date(old.cached)},
-				'github.dependents': {$in: relevant}
+				cached: new Date(old.cached),
+				dependents: relevant
 			});
 		}
 
-		return {$or:ors};
+		return ors;
 	};
 
 	var updates = 0;

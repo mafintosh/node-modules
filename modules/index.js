@@ -172,7 +172,7 @@ var createSearchStream = function (q) {
 		})
 	}
 
-	return level.modules.createReadStream()
+	throw new Error('Unknown query')
 }
 
 var toArray = function (arr) {
@@ -181,11 +181,11 @@ var toArray = function (arr) {
 }
 
 var keyify = function(data) {
-	return data.key.slice(data.key.lastIndexOf('~') + 1)
+	return data.key.slice(data.key.indexOf('~') + 1)
 }
 
 exports.createReadStream = function(queries) {
-	if (!Array.isArray(queries)) queries = [queries]
+	if (!Array.isArray(queries)) queries = [queries || {}]
 
 	var normalized = []
 
@@ -206,14 +206,14 @@ exports.createReadStream = function(queries) {
 				username: username[j]
 			})
 		}
-		if (!q.dependents && !q.username) {
+		if (!q.dependents && !q.username && q.cached) {
 			normalized.push({
 				cached: q.cached
 			})
 		}
 	}
 
-	if (!normalized.length) normalized = [{}]
+	if (!normalized) return level.modules.createValueStream()
 
 	var results = normalized
 		.map(createSearchStream)
@@ -222,8 +222,7 @@ exports.createReadStream = function(queries) {
 		})
 
 	var mods = stream.transform(function (data, enc, cb) {
-		if (typeof data.value === 'string') return exports.get(data.value, cb)
-		cb(null, data.value)
+		exports.get(data.value, cb)
 	})
 
 	pump(results, mods)
