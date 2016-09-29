@@ -37,7 +37,12 @@ var countModules = thunky(function (cb) {
 countModules() // trigger this right away to avoid rcs
 
 exports.get = function(name, callback) {
-	if (cache.has(name)) return callback(null, cache.get(name));
+	if (cache.has(name)) {
+		process.nextTick(function () {
+			callback(null, cache.get(name));
+			return
+		})
+	}
 	level.modules.get(name, function(err, module) {
 		if (err) return callback(err);
 		cache.set(name, module);
