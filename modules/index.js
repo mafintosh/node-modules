@@ -213,7 +213,7 @@ exports.createReadStream = function(queries) {
 		}
 	}
 
-	if (!normalized) return level.modules.createValueStream()
+	if (!normalized.length) return level.modules.createValueStream()
 
 	var results = normalized
 		.map(createSearchStream)
