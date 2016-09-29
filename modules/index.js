@@ -144,31 +144,31 @@ var createSearchStream = function (q) {
 	if (q.cached) {
 		if (q.username) {
 			return level.modules.username.createReadStream({
-				gt: q.username + '~' + toISOString(q.cached) + '~',
-				lt: q.username + '~' + toISOString(q.cached) + '~~'
+				start: q.username + '~' + toISOString(q.cached) + '~',
+				end: q.username + '~' + toISOString(q.cached) + '~~'
 			})
 		}
 		if (q.dependents) {
 			return level.modules.dependents.createReadStream({
-				gt: q.dependents + '~' + toISOString(q.cached) + '~',
-				lt: q.dependents + '~' + toISOString(q.cached) + '~~'
+				start: q.dependents + '~' + toISOString(q.cached) + '~',
+				end: q.dependents + '~' + toISOString(q.cached) + '~~'
 			})
 		}
 		return level.modules.cached.createReadStream({
-			gt: toISOString(q.cached) + '~',
-			lt: toISOString(q.cached) + '~~'
+			start: toISOString(q.cached) + '~',
+			end: toISOString(q.cached) + '~~'
 		})
 	}
 	if (q.username) {
 		return level.modules.username.createReadStream({
-			gt: q.username + '~',
-			lt: q.username + '~~'
+			start: q.username + '~',
+			end: q.username + '~~'
 		})
 	}
 	if (q.dependents) {
 		return level.modules.dependents.createReadStream({
-			gt: q.dependents + '~',
-			lt: q.dependents + '~~'
+			start: q.dependents + '~',
+			end: q.dependents + '~~'
 		})
 	}
 
