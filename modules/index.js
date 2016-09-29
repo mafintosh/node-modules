@@ -6,7 +6,6 @@ var EventEmitter = require('events').EventEmitter;
 var stream = require('stream-wrapper');
 var thunky = require('thunky');
 var LRU = require('lru-cache');
-var ndjson = require('ndjson');
 var getJSON = require('../getJSON');
 var fetch = require('./fetch');
 var level = require('../level');
