@@ -19,7 +19,10 @@ var cache = new LRU(50000);
 
 var countModules = thunky(function (cb) {
 	level.meta.get('count', function (err, cnt) {
-		if (cnt) return cb(null, cnt)
+		if (cnt) {
+			modulesAdded = cnt
+			return cb(null)
+		}
 
 		level.modules.createReadStream()
 			.on('data', function () {
