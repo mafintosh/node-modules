@@ -151,7 +151,7 @@ var updateNobody = thunky(function(callback) { // we NEED to update the anon ind
 
 var updateUser = function(user, callback) {
 	var generateQuery = function(old) {
-		if (isNobody(user) && !old) return [{}];
+		if (isNobody(user) && !old) return [];
 		if (isNobody(user)) return [{cached: new Date(old.cached)}];
 
 		var ors = [];

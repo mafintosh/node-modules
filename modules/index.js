@@ -185,7 +185,8 @@ var keyify = function(data) {
 }
 
 exports.createReadStream = function(queries) {
-	if (!Array.isArray(queries)) queries = [queries || {}]
+	if (!Array.isArray(queries)) queries = [].concat(queries || [])
+	if (!queries.length) return level.modules.createValueStream()
 
 	var normalized = []
 
@@ -213,7 +214,8 @@ exports.createReadStream = function(queries) {
 		}
 	}
 
-	if (!normalized.length) return level.modules.createValueStream()
+	// just return an empty stream
+	if (!normalized.length) return level.modules.createValueStream({start: '~'})
 
 	var results = normalized
 		.map(createSearchStream)
