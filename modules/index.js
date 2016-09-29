@@ -145,18 +145,17 @@ var createSearchStream = function (q) {
 		if (q.username) {
 			return level.modules.username.createReadStream({
 				start: q.username + '~' + toISOString(q.cached) + '~',
-				end: q.username + '~' + toISOString(q.cached) + '~~'
+				end: q.username + '~~'
 			})
 		}
 		if (q.dependents) {
 			return level.modules.dependents.createReadStream({
 				start: q.dependents + '~' + toISOString(q.cached) + '~',
-				end: q.dependents + '~' + toISOString(q.cached) + '~~'
+				end: q.dependents + '~~'
 			})
 		}
 		return level.modules.cached.createReadStream({
-			start: toISOString(q.cached) + '~',
-			end: toISOString(q.cached) + '~~'
+			start: toISOString(q.cached) + '~'
 		})
 	}
 	if (q.username) {
