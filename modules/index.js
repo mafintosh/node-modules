@@ -38,9 +38,10 @@ countModules() // trigger this right away to avoid rcs
 
 exports.get = function(name, callback) {
 	if (cache.has(name)) {
+		var val = cache.get(name);
 		process.nextTick(function () {
-			callback(null, cache.get(name));
-		})
+			callback(null, val);
+		});
 		return
 	}
 	level.modules.get(name, function(err, module) {
