@@ -144,12 +144,12 @@ var indexModule = function (mod, old, cb) {
 }
 
 exports.info = function(callback) {
-	countModules(function(err, baseCount) {
+	countModules(function(err) {
 		if (err) return callback(err);
 		level.meta.get('modules', function(err, meta) {
 			if (err && !err.notFound) return callback(err);
 			callback(null, {
-				modules: baseCount + modulesAdded,
+				modules: modulesAdded,
 				seq: meta && meta.seq || 0
 			});
 		});
