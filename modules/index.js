@@ -10,8 +10,7 @@ var ndjson = require('ndjson');
 var getJSON = require('../getJSON');
 var fetch = require('./fetch');
 var level = require('../level');
-var intersect = require('sorted-intersect-stream');
-
+var union = require('sorted-union-stream');
 
 stream = stream.defaults({objectMode:true});
 
@@ -219,7 +218,7 @@ exports.createReadStream = function(queries) {
 	var results = normalized
 		.map(createSearchStream)
 		.reduce(function (a, b) {
-			return intersect(a, b, keyify)
+			return union(a, b, keyify)
 		})
 
 	var mods = stream.transform(function (data, enc, cb) {
