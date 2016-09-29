@@ -18,17 +18,20 @@ var modulesAdded = 0;
 var cache = new LRU(50000);
 
 var countModules = thunky(function (cb) {
-	var cnt = 0
-	level.modules.createReadStream()
-		.on('data', function () {
-			cnt++
-		})
-		.on('error', function (err) {
-			cb(err)
-		})
-		.on('end', function () {
-			cb(null, cnt)
-		})
+	level.meta.get('count', function (err, cnt) {
+		if (cnt) return cb(null, cnt)
+
+		level.modules.createReadStream()
+			.on('data', function () {
+				modulesAdded++
+			})
+			.on('error', function (err) {
+				cb(err)
+			})
+			.on('end', function () {
+				cb(null)
+			})
+	})
 })
 
 countModules() // trigger this right away to avoid rcs
@@ -121,7 +124,16 @@ var indexModule = function (mod, old, cb) {
     value: mod
   })
 
-  if (!old) modulesAdded++
+  if (!old) {
+  	modulesAdded++
+  	batch.push({
+  		type: 'put',
+  		prefix: level.meta,
+  		key: 'count',
+  		value: modulesAdded
+  	})
+  }
+
   level.batch(batch, cb)
 }
 
@@ -345,9 +357,11 @@ exports.update = function(opts, callback) {
 
 	if (opts.updated) throw new Error('options.updated is no longer supported. fix me.');
 
-	level.meta.get('modules', function(err, doc) {
-		if (err && !err.notFound) return progress.emit('error', err);
-		onlastupdated(doc ? doc.seq : 0);
+	countModules(function () {
+		level.meta.get('modules', function(err, doc) {
+			if (err && !err.notFound) return progress.emit('error', err);
+			onlastupdated(doc ? doc.seq : 0);
+		});
 	});
 
 	return progress;
