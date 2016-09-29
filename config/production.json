@@ -1,6 +1,5 @@
 {
-  "fingerprint": false,
-	"fingerprint_old": "{../.git/refs/heads/master}",
+	"fingerprint": "{../.git/refs/heads/master}",
 	"github": {
 		"client": "b365e7adff5be0b15957",
 		"secret": "{$GITHUB_SECRET}"
