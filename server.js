@@ -60,6 +60,10 @@ app.on('route', function(request, response) {
 	var username = request.query.u || c.username || '';
 	if (request.query.u === '') username = '';
 
+	if (!username && request.headers.host.indexOf('.node-modules.com') > -1 && request.headers.host !== 'www.node-modules.com') {
+		username = request.headers.host.split('.')[0];
+	}
+
 	request.username = username = username.toLowerCase();
 	response.setHeader('Set-Cookie', cookie.serialize('username', username, {maxAge:COOKIE_MAX_AGE}));
 	response.setHeader('Access-Control-Allow-Origin', '*');
