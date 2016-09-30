@@ -194,6 +194,7 @@ app.get('/favicon.ico', '/public/favicon.ico');
 app.get('/', function(request, response) {
 	modules.info(function(err, info) {
 		if (err) return response.error(err);
+		info.userPage = !!request.userPage;
 		response.render('index.html', info);
 	});
 });
