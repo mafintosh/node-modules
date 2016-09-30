@@ -185,7 +185,7 @@ app.get('/~{username}', function(request, response) {
 app.get('/search', function(request, response) {
 	request.search(function(err, modules) {
 		if (err) return response.error(err);
-		response.render(request.query.partial ? 'partials/modules.html' : 'search.html', {modules:modules});
+		response.render(request.query.partial ? 'partials/modules.html' : 'search.html', {modules:modules, userPage: request.userPage});
 	});
 });
 
@@ -206,13 +206,6 @@ app.get('/about', function(request, response) {
 app.get('/mission', function(request, response) {
 	response.render('mission.html');
 });
-
-app.get('/{username}/*', function (request, response) {
-	request.headers.host = request.params.username + '.node-modules.com';
-	request.url = '/' + request.url.slice(request.params.username.length + 1);
-	app.route(request, response);
-})
-
 
 app.error(404, function(request, response) {
 	response.render('error.html', {
