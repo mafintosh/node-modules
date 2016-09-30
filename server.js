@@ -56,16 +56,20 @@ app.use('request.search', function(callback) {
 app.on('route', function(request, response) {
 	if (request.headers.host === 'blog.node-modules.com') return response.redirect('http://reddit.com/r/node_modules');
 
+	var setCookie = true;
 	var c = cookie.parse(request.headers.cookie || '');
 	var username = request.query.u || c.username || '';
 	if (request.query.u === '') username = '';
 
-	if (!username && request.headers.host.indexOf('.node-modules.com') > -1 && request.headers.host !== 'www.node-modules.com') {
+	if (!username && request.headers.host.indexOf('.node-modules.com') > -1) {
+		setCookie = false;
 		username = request.headers.host.split('.')[0];
+		if (username === 'development' || username === 'www') username = '';
+		if (username) request.userPage = true;
 	}
 
 	request.username = username = username.toLowerCase();
-	response.setHeader('Set-Cookie', cookie.serialize('username', username, {maxAge:COOKIE_MAX_AGE}));
+	if (setCookie) response.setHeader('Set-Cookie', cookie.serialize('username', username, {maxAge:COOKIE_MAX_AGE}));
 	response.setHeader('Access-Control-Allow-Origin', '*');
 });
 
@@ -189,6 +193,7 @@ app.get('/favicon.ico', '/public/favicon.ico');
 
 app.get('/', function(request, response) {
 	modules.info(function(err, info) {
+		info.userPage = request.userPage;
 		response.render('index.html', info);
 	});
 });
@@ -200,6 +205,13 @@ app.get('/about', function(request, response) {
 app.get('/mission', function(request, response) {
 	response.render('mission.html');
 });
+
+app.get('/{username}/*', function (request, response) {
+	request.headers.host = request.params.username + '.node-modules.com';
+	request.url = '/' + request.url.slice(request.params.username.length + 1);
+	app.route(request, response);
+})
+
 
 app.error(404, function(request, response) {
 	response.render('error.html', {
