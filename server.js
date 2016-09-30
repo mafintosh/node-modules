@@ -61,7 +61,7 @@ app.on('route', function(request, response) {
 	var username = request.query.u || c.username || '';
 	if (request.query.u === '') username = '';
 
-	if (!username && request.headers.host.indexOf('.node-modules.com') > -1) {
+	if (request.headers.host.indexOf('.node-modules.com') > -1) {
 		setCookie = false;
 		username = request.headers.host.split('.')[0];
 		if (username === 'development' || username === 'www') username = '';
@@ -193,7 +193,7 @@ app.get('/favicon.ico', '/public/favicon.ico');
 
 app.get('/', function(request, response) {
 	modules.info(function(err, info) {
-		info.userPage = request.userPage;
+		if (err) return response.error(err);
 		response.render('index.html', info);
 	});
 });
