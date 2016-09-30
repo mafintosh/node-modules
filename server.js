@@ -185,7 +185,7 @@ app.get('/~{username}', function(request, response) {
 app.get('/search', function(request, response) {
 	request.search(function(err, modules) {
 		if (err) return response.error(err);
-		response.render(request.query.partial ? 'partials/modules.html' : 'search.html', {modules:modules, userPage: request.userPage});
+		response.render(request.query.partial ? 'partials/modules.html' : 'search.html', {modules:modules, userPage: !!request.userPage});
 	});
 });
 
