@@ -84,6 +84,24 @@ input[type="submit"] {
 	margin-top: 20%;
 }
 
+.sponsor {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    font-size: 12px;
+}
+
+#nav .sponsor a {
+	float: none;
+}
+
+@media screen and (max-width: 1120px){
+	.sponsor {
+		top: auto;
+		bottom: 20px;
+	}
+}
+
 #frontpage, #about, #mission {
 	width: 408px;
 	margin: auto;
