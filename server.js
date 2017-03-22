@@ -1,3 +1,5 @@
+var opbeat = require('opbeat').start();
+
 var root = require('root');
 var pejs = require('pejs');
 var send = require('send');
@@ -71,6 +73,10 @@ app.on('route', function(request, response) {
 	request.username = username = username.toLowerCase();
 	if (setCookie) response.setHeader('Set-Cookie', cookie.serialize('username', username, {maxAge:COOKIE_MAX_AGE}));
 	response.setHeader('Access-Control-Allow-Origin', '*');
+});
+
+app.on('match', function (request, response, pattern) {
+	opbeat.setTransactionName(request.method + ' ' + pattern);
 });
 
 app.get('/package/{name}.json', function(request, response) {
