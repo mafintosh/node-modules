@@ -98,7 +98,7 @@ var lookup = function(name, opts, callback) {
 
 	getJSONRetry('http://registry.npmjs.org/'+enc(name), function(err, npm) {
 		if (err) return callback(); // deleted module
-		if (!npm.time) return callback();
+		if (!npm.time || !npm.versions) return callback();
 
 		var mod = {};
 		var repository = parseRepository(npm.repository) || parseRepository(npm.homepage);
