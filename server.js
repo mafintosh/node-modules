@@ -63,7 +63,7 @@ app.on('route', function(request, response) {
 	var username = request.query.u || c.username || '';
 	if (request.query.u === '') username = '';
 
-	if (request.headers.host.indexOf('.node-modules.com') > -1) {
+	if (request.headers.host && request.headers.host.indexOf('.node-modules.com') > -1) {
 		setCookie = false;
 		username = request.headers.host.split('.')[0];
 		if (username === 'development' || username === 'www') username = '';
