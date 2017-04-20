@@ -54,6 +54,8 @@ var pack = function(mod, user) { // TODO: maybe optimize this as it is run A LOT
 
 var unpack = function(mod, packed) {
 	var gh = mod.github;
+	var npmUrl = 'https://npmjs.org/package/'+mod._id;
+	var ghUrl = gh && gh.url;
 	return {
 		name: mod._id,
 		author: gh && gh.username || mod.maintainer,
@@ -64,7 +66,9 @@ var unpack = function(mod, packed) {
 		stars: gh && gh.stars || 0,
 		dependents: mod.dependents.length,
 		description: mod.description,
-		url: gh && gh.url || 'https://npmjs.org/package/'+mod._id,
+		url: ghUrl || npmUrl,
+		gh_url: ghUrl,
+		npm_url: npmUrl,
 		marker: marker(mod._id, packed[1]),
 		version: mod.version
 	};
